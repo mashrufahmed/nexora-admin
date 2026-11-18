@@ -22,6 +22,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { ColorAvatar } from '@/components/ui/ui-bits';
+import { useAuth } from '@/components/providers/auth-provider';
 import { members, organization } from '@/lib/mock';
 import { navGroups } from '@/lib/navigation';
 
@@ -53,7 +54,7 @@ export function OrganizationSwitcher() {
             <>
               <span className="grid flex-1 text-left leading-tight">
                 <span className="truncate text-sm font-semibold text-sidebar-accent-foreground">
-                  PublishHub
+                   Nexora
                 </span>
                 <span className="truncate text-xs">{organization.name}</span>
               </span>
@@ -89,6 +90,7 @@ export function AppSidebar() {
   const path = usePathname();
   const { state } = useSidebar();
   const me = members[0];
+  const { admin, logoutLoading, logout } = useAuth();
   const isActive = (url: string) =>
     path === url ||
     (url !== '/dashboard' &&
@@ -116,7 +118,7 @@ export function AppSidebar() {
                       // asChild
                       isActive={isActive(item.url)}
                       tooltip={item.title}
-                      className="data-[active=true]:text-primary"
+                      className="data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[active=true]:shadow-sm"
                     >
                       <Link href={item.url}>
                         <item.icon className="size-4" />
@@ -137,14 +139,14 @@ export function AppSidebar() {
               <DropdownMenuTrigger
               // asChild
               >
-                <SidebarMenuButton size="lg" tooltip={me.name}>
-                  <ColorAvatar name={me.name} color={me.color} />
+                <SidebarMenuButton size="lg" tooltip={admin?.name ?? me.name}>
+                  <ColorAvatar name={admin?.name ?? me.name} color={me.color} />
                   {state === 'expanded' && (
                     <span className="grid flex-1 text-left leading-tight">
                       <span className="truncate text-sm font-medium text-sidebar-accent-foreground">
-                        {me.name}
+                        {admin?.name ?? me.name}
                       </span>
-                      <span className="truncate text-xs">{me.email}</span>
+                      <span className="truncate text-xs">{admin?.email ?? me.email}</span>
                     </span>
                   )}
                 </SidebarMenuButton>
@@ -166,15 +168,9 @@ export function AppSidebar() {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onClick={() =>
-                    // toast.info('Demo mode', {
-                    //   description:
-                    //     'Sign-out requires a connected account system.',
-                    // })
-                    alert('Sign-out requires a connected account system.')
-                  }
+                  onClick={() => void logout()}
                 >
-                  <LogOut className="size-4" /> Sign out
+                  <LogOut className="size-4" /> {logoutLoading ? 'Signing out…' : 'Sign out'}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

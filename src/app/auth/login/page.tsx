@@ -3,6 +3,9 @@
 import { IconCrown, IconEye, IconEyeOff } from '@tabler/icons-react';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { authApi } from '@/lib/api/auth';
+import { ApiError } from '@/lib/api/client';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -18,6 +21,16 @@ import { Label } from '@/components/ui/label';
 
 export default function Page() {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setError(''); setLoading(true);
+    try { await authApi.login(email, password); router.replace('/dashboard/home'); } catch (cause) { setError(cause instanceof ApiError ? cause.message : 'Unable to sign in'); } finally { setLoading(false); }
+  }
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-background text-foreground">
@@ -84,7 +97,7 @@ export default function Page() {
             </CardHeader>
 
             <CardContent>
-              <form className="space-y-5">
+              <form className="space-y-5" onSubmit={onSubmit}>
                 {/* Email */}
                 <div className="space-y-2">
                   <Label htmlFor="email">Email address</Label>
@@ -94,6 +107,8 @@ export default function Page() {
                     placeholder="you@example.com"
                     autoComplete="email"
                     required
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
                     className="h-10 bg-background/60 font-medium"
                   />
                 </div>
@@ -109,6 +124,8 @@ export default function Page() {
                       placeholder="Enter your password"
                       autoComplete="current-password"
                       required
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
                       className="h-10 bg-background/60 pr-16 font-medium"
                     />
 
@@ -150,8 +167,9 @@ export default function Page() {
                 </div>
 
                 {/* Sign in */}
-                <Button type="submit" className="h-10 w-full font-semibold">
-                  Sign in
+                {error && <p role="alert" className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</p>}
+                <Button type="submit" disabled={loading} className="h-10 w-full font-semibold">
+                  {loading ? 'Signing in…' : 'Sign in'}
                 </Button>
                 <p className="text-center text-xs font-medium text-muted-foreground">
                   Securely recover access to your account anytime.

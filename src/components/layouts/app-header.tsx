@@ -16,13 +16,13 @@ import {
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { fmtAgo } from '@/lib/format';
+import { fmtDate } from '@/lib/format';
 import { notifications as seedNotifications, sites } from '@/lib/mock';
 import { allNavLeaves } from '@/lib/navigation';
 import { useCollection } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
-import { Bell, CheckCheck } from 'lucide-react';
+import { Bell, CheckCheck, Command, Search } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Fragment } from 'react';
@@ -125,7 +125,7 @@ export function NotificationCenter() {
                   {n.body}
                 </span>
                 <span className="mt-1 block text-[11px] text-muted-foreground">
-                  {fmtAgo(n.at)}
+                  {fmtDate(n.at)}
                 </span>
               </span>
             </button>
@@ -149,6 +149,7 @@ export function AppHeader() {
       <SidebarTrigger />
       <Separator orientation="vertical" className="mx-1 h-5" />
       <Breadcrumbs />
+      <div className="ml-auto hidden max-w-sm flex-1 items-center justify-center px-4 lg:flex"><button className="flex h-8 w-full items-center gap-2 rounded-lg border bg-muted/40 px-3 text-left text-xs text-muted-foreground transition-colors hover:bg-muted"><Search className="size-3.5" /><span className="flex-1">Search anything...</span><span className="inline-flex items-center gap-0.5 rounded border bg-background px-1.5 py-0.5 text-[10px]"><Command className="size-2.5" /> K</span></button></div>
       <div className="ml-auto flex items-center gap-1.5">
         <NotificationCenter />
       </div>
