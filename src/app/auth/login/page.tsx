@@ -1,12 +1,5 @@
 'use client';
 
-import { IconCrown, IconEye, IconEyeOff } from '@tabler/icons-react';
-import Link from 'next/link';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { authApi } from '@/lib/api/auth';
-import { ApiError } from '@/lib/api/client';
-
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -18,6 +11,12 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { authApi } from '@/lib/api/auth';
+import { ApiError } from '@/lib/api/client';
+import { IconCrown, IconEye, IconEyeOff } from '@tabler/icons-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export default function Page() {
   const [showPassword, setShowPassword] = useState(false);
@@ -28,8 +27,17 @@ export default function Page() {
   const router = useRouter();
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setError(''); setLoading(true);
-    try { await authApi.login(email, password); router.replace('/dashboard/home'); } catch (cause) { setError(cause instanceof ApiError ? cause.message : 'Unable to sign in'); } finally { setLoading(false); }
+    event.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      await authApi.login(email, password);
+      router.replace('/dashboard/home');
+    } catch (cause) {
+      setError(cause instanceof ApiError ? cause.message : 'Unable to sign in');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -167,8 +175,19 @@ export default function Page() {
                 </div>
 
                 {/* Sign in */}
-                {error && <p role="alert" className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</p>}
-                <Button type="submit" disabled={loading} className="h-10 w-full font-semibold">
+                {error && (
+                  <p
+                    role="alert"
+                    className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive"
+                  >
+                    {error}
+                  </p>
+                )}
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="h-10 w-full font-semibold"
+                >
                   {loading ? 'Signing in…' : 'Sign in'}
                 </Button>
                 <p className="text-center text-xs font-medium text-muted-foreground">
