@@ -50,6 +50,7 @@ export async function apiFetch<T>(
 ): Promise<T> {
   const isFormData =
     typeof FormData !== 'undefined' && init.body instanceof FormData;
+  const hasBody = init.body !== undefined && init.body !== null;
   let response: Response;
   try {
     const method = (init.method ?? 'GET').toUpperCase();
@@ -57,7 +58,7 @@ export async function apiFetch<T>(
       ? { 'X-CSRF-Token': await getCsrfToken() }
       : {};
     const headers = new Headers(init.headers);
-    if (!isFormData) headers.set('Content-Type', 'application/json');
+    if (hasBody && !isFormData) headers.set('Content-Type', 'application/json');
     if (csrfHeaders['X-CSRF-Token']) headers.set('X-CSRF-Token', csrfHeaders['X-CSRF-Token']);
     response = await fetch(`${API_BASE}${path}`, {
       ...init,

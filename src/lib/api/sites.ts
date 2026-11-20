@@ -25,12 +25,23 @@ export type CreateSiteInput = {
   seoSettings?: Record<string, unknown>;
 };
 
+function normalizeSite(site: Site): Site {
+  return {
+    ...site,
+    domains: Array.isArray(site.domains) ? site.domains : [],
+  };
+}
+
+function normalizeSites(sites: Site[]): Site[] {
+  return sites.map(normalizeSite);
+}
+
 export const sitesApi = {
-  list: () => apiFetch<Site[]>('/sites'),
-  get: (id: string) => apiFetch<Site>(`/sites/${id}`),
-  create: (input: CreateSiteInput) => apiJson<Site>('/sites', 'POST', input),
+  list: async () => normalizeSites(await apiFetch<Site[]>('/sites')),
+  get: async (id: string) => normalizeSite(await apiFetch<Site>(`/sites/${id}`)),
+  create: async (input: CreateSiteInput) => normalizeSite(await apiJson<Site>('/sites', 'POST', input)),
   update: (id: string, input: Partial<CreateSiteInput> & { status?: string }) =>
-    apiJson<Site>(`/sites/${id}`, 'PATCH', input),
+    apiJson<Site>(`/sites/${id}`, 'PATCH', input).then(normalizeSite),
   remove: (id: string) =>
     apiJson<{ message: string }>(`/sites/${id}`, 'DELETE'),
   addDomain: (id: string, hostname: string, isPrimary: boolean) =>

@@ -36,6 +36,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('nexora:session-expired', onExpired);
   }, [router]);
   useEffect(() => {
+    if (!loading && admin && pathname === '/auth/login') {
+      router.replace('/dashboard/home');
+    }
+  }, [admin, loading, pathname, router]);
+  useEffect(() => {
     if (!loading && !admin && !PUBLIC_PATHS.includes(pathname)) router.replace('/auth/login');
   }, [admin, loading, pathname, router]);
 

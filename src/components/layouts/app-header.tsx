@@ -73,22 +73,22 @@ export function NotificationCenter() {
   return (
     <Popover>
       <PopoverTrigger
-      // asChild
-      >
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative"
-          aria-label={`Notifications, ${unread} unread`}
-        >
+        render={
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative rounded-lg"
+            aria-label={`Notifications, ${unread} unread`}
+          >
           <Bell className="size-4" />
           {unread > 0 && (
             <span className="absolute right-1.5 top-1.5 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
               {unread}
             </span>
           )}
-        </Button>
-      </PopoverTrigger>
+          </Button>
+        }
+      />
       <PopoverContent align="end" className="w-90 p-0">
         <div className="flex items-center justify-between border-b px-4 py-3">
           <p className="text-sm font-semibold">Notifications</p>
@@ -130,11 +130,14 @@ export function NotificationCenter() {
           ))}
         </div>
         <div className="border-t p-2">
-          <Link href="/settings/notifications">
-            <Button variant="ghost" size="sm" className="w-full">
-              Notification settings
-            </Button>
-          </Link>
+          <Button
+            render={<Link href="/settings/account" />}
+            variant="ghost"
+            size="sm"
+            className="w-full"
+          >
+            Account settings
+          </Button>
         </div>
       </PopoverContent>
     </Popover>
@@ -143,7 +146,7 @@ export function NotificationCenter() {
 
 export function AppHeader() {
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b bg-background/80 px-3 backdrop-blur supports-backdrop-filter:bg-background/70 sm:px-4">
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b bg-background/92 px-3 backdrop-blur supports-backdrop-filter:bg-background/80 sm:px-5">
       <SidebarTrigger />
       <Separator orientation="vertical" className="mx-1 h-5" />
       <Breadcrumbs />
