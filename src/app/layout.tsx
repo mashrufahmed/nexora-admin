@@ -4,6 +4,7 @@ import { QueryProvider } from '@/components/providers/query-provider';
 import { cn } from '@/lib/utils';
 import type { Metadata } from 'next';
 import { Montserrat } from 'next/font/google';
+import { Suspense } from 'react';
 import './globals.css';
 
 const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-sans' });
@@ -27,7 +28,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
           enableSystem
           disableTransitionOnChange
         >
-          <QueryProvider><AuthProvider>{children}</AuthProvider></QueryProvider>
+          <QueryProvider><Suspense fallback={null}><AuthProvider>{children}</AuthProvider></Suspense></QueryProvider>
         </ThemeProvider>
       </body>
     </html>

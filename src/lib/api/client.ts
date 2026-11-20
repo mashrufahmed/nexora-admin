@@ -20,6 +20,29 @@ export class ApiError extends Error {
 const API_BASE = (
   process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000/api/v1'
 ).replace(/\/$/, '');
+let csrfToken: string | null = null;
+const csrfExemptPaths = new Set([
+  '/admin/auth/login',
+  '/admin/auth/forgot-password',
+  '/admin/auth/reset-password',
+  '/admin/email/verify',
+  '/admin/email/resend',
+]);
+
+async function getCsrfToken(): Promise<string> {
+  if (csrfToken) return csrfToken;
+  const response = await fetch(`${API_BASE}/admin/auth/csrf`, {
+    credentials: 'include',
+  });
+  const body = (await response.json()) as ApiResponse<{ token: string }>;
+  if (!response.ok || !body.data?.token) throw new ApiError('Unable to initialize secure session', response.status);
+  csrfToken = body.data.token;
+  return csrfToken;
+}
+
+export function clearCsrfToken(): void {
+  csrfToken = null;
+}
 
 export async function apiFetch<T>(
   path: string,
@@ -29,12 +52,17 @@ export async function apiFetch<T>(
     typeof FormData !== 'undefined' && init.body instanceof FormData;
   let response: Response;
   try {
+    const method = (init.method ?? 'GET').toUpperCase();
+    const csrfHeaders = !['GET', 'HEAD', 'OPTIONS'].includes(method) && !csrfExemptPaths.has(path)
+      ? { 'X-CSRF-Token': await getCsrfToken() }
+      : {};
+    const headers = new Headers(init.headers);
+    if (!isFormData) headers.set('Content-Type', 'application/json');
+    if (csrfHeaders['X-CSRF-Token']) headers.set('X-CSRF-Token', csrfHeaders['X-CSRF-Token']);
     response = await fetch(`${API_BASE}${path}`, {
       ...init,
       credentials: 'include',
-      headers: isFormData
-        ? init.headers
-        : { 'Content-Type': 'application/json', ...(init.headers ?? {}) },
+      headers,
     });
   } catch {
     throw new ApiError(
@@ -42,8 +70,11 @@ export async function apiFetch<T>(
       0,
     );
   }
-  if (response.status === 401 && typeof window !== 'undefined')
-    window.dispatchEvent(new CustomEvent('nexora:session-expired'));
+  if (response.status === 401) {
+    csrfToken = null;
+    if (typeof window !== 'undefined')
+      window.dispatchEvent(new CustomEvent('nexora:session-expired'));
+  }
 
   const body = (await response.json().catch(() => null)) as
     | ApiResponse<T>

@@ -6,6 +6,7 @@ export type SiteDomain = {
   isPrimary: boolean;
   createdAt: string;
 };
+export type SiteSecret = { id: string; secret: string; createdAt: string };
 export type Site = {
   id: string;
   name: string;
@@ -37,4 +38,6 @@ export const sitesApi = {
       hostname,
       isPrimary,
     }),
+  createSecret: (id: string) => apiJson<SiteSecret>(`/sites/${id}/secrets`, 'POST'),
+  revokeSecret: (id: string, secretId: string) => apiJson<{ message: string }>(`/sites/${id}/secrets/${secretId}`, 'DELETE'),
 };

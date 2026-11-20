@@ -11,6 +11,10 @@ export type Review = {
   [key: string]: unknown;
 };
 export const reviewsApi = {
+  criteria: (siteId: string) => apiFetch<Array<{ id: string; name: string; description?: string | null; weight: number; position: number }>>(`/sites/${siteId}/review-criteria`),
+  createCriterion: (siteId: string, input: { name: string; description?: string; weight: number; position?: number }) => apiJson<Record<string, unknown>>(`/sites/${siteId}/review-criteria`, 'POST', input),
+  updateCriterion: (id: string, input: { name: string; description?: string; weight: number; position?: number }) => apiJson<Record<string, unknown>>(`/review-criteria/${id}`, 'PATCH', input),
+  deleteCriterion: (id: string) => apiJson<{ message: string }>(`/review-criteria/${id}`, 'DELETE'),
   list: () => apiFetch<Review[]>('/reviews'),
   get: (id: string) => apiFetch<Review>(`/reviews/${id}`),
   create: (input: Record<string, unknown>) =>

@@ -58,3 +58,18 @@ export const contentApi = {
       slug,
     }),
 };
+
+export type Category = {
+  id: string;
+  siteId: string;
+  name: string;
+  slug: string;
+  parentId: string | null;
+  children?: Category[];
+};
+
+export const categoriesApi = {
+  list: (siteId: string) => apiFetch<Category[]>(`/sites/${siteId}/categories`),
+  create: (siteId: string, input: { name: string; slug: string; parentId?: string }) =>
+    apiJson<Category>(`/sites/${siteId}/categories`, 'POST', input),
+};

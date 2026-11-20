@@ -8,8 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from '@/components/ui/label';
 import { sitesApi, type Site } from '@/lib/api/sites';
 import { ApiError } from '@/lib/api/client';
-import { ArrowUpRight, Globe2, Plus, RefreshCw, Search, Server, Trash2 } from 'lucide-react';
-import Link from 'next/link';
+import { ArrowUpRight, Globe2, Plus, RefreshCw, Search, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 export default function SitesPage() {
@@ -23,6 +22,8 @@ export default function SitesPage() {
   const [saving, setSaving] = useState(false);
 
   async function load() { setLoading(true); setError(''); try { setSites(await sitesApi.list()); } catch (cause) { setError(cause instanceof ApiError ? cause.message : 'Unable to load sites'); } finally { setLoading(false); } }
+  // Initial data loading synchronizes this client component with the API.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { void load(); }, []);
   const filtered = useMemo(() => sites.filter((site) => `${site.name} ${site.slug}`.toLowerCase().includes(query.toLowerCase())), [query, sites]);
   async function createSite(event: React.FormEvent) { event.preventDefault(); setSaving(true); setError(''); try { const created = await sitesApi.create({ name: name.trim(), slug: slug.trim().toLowerCase() }); setSites((current) => [created, ...current]); setOpen(false); setName(''); setSlug(''); } catch (cause) { setError(cause instanceof ApiError ? cause.message : 'Unable to create site'); } finally { setSaving(false); } }

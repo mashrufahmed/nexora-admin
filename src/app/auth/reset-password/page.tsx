@@ -7,7 +7,10 @@ import {
   IconLock,
 } from '@tabler/icons-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { ApiError } from '@/lib/api/client';
+import { authApi } from '@/lib/api/auth';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -20,9 +23,26 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
+  const params = useSearchParams();
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [email, setEmail] = useState(params.get('email') ?? '');
+  const [token, setToken] = useState(params.get('token') ?? '');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setError('');
+    if (password !== confirmPassword) { setError('Passwords do not match'); return; }
+    setLoading(true);
+    try { await authApi.resetPassword(email, token, password); router.replace('/auth/login'); }
+    catch (cause) { setError(cause instanceof ApiError ? cause.message : 'Unable to reset password'); }
+    finally { setLoading(false); }
+  }
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-background p-6 text-foreground">
@@ -50,7 +70,9 @@ export default function ResetPasswordPage() {
         </CardHeader>
 
         <CardContent>
-          <form action="/login" className="space-y-5">
+          <form onSubmit={submit} className="space-y-5">
+            <div className="space-y-2"><Label htmlFor="email">Email address</Label><Input id="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></div>
+            <div className="space-y-2"><Label htmlFor="token">Reset token</Label><Input id="token" value={token} onChange={(event) => setToken(event.target.value)} required /></div>
             {/* New password */}
             <div className="space-y-2">
               <Label htmlFor="password">New password</Label>
@@ -62,7 +84,9 @@ export default function ResetPasswordPage() {
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter new password"
                   required
-                  minLength={8}
+                  minLength={12}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
                   className="h-10 bg-background/60 pr-16 font-medium"
                 />
 
@@ -94,7 +118,9 @@ export default function ResetPasswordPage() {
                   type={showConfirmPassword ? 'text' : 'password'}
                   placeholder="Confirm new password"
                   required
-                  minLength={8}
+                  minLength={12}
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
                   className="h-10 bg-background/60 pr-16 font-medium"
                 />
 
@@ -115,8 +141,9 @@ export default function ResetPasswordPage() {
               </div>
             </div>
 
-            <Button type="submit" className="h-10 w-full">
-              Reset password
+            {error && <p role="alert" className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</p>}
+            <Button type="submit" className="h-10 w-full" disabled={loading}>
+              {loading ? 'Resetting…' : 'Reset password'}
             </Button>
 
             <p className="text-center text-xs text-muted-foreground font-medium">
@@ -130,4 +157,8 @@ export default function ResetPasswordPage() {
       </Card>
     </main>
   );
+}
+
+export default function ResetPasswordPage() {
+  return <Suspense fallback={null}><ResetPasswordForm /></Suspense>;
 }

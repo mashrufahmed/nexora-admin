@@ -17,6 +17,7 @@ export type Merchant = {
   website?: string | null;
 };
 export const affiliateApi = {
+  merchants: () => apiFetch<Merchant[]>('/merchants'),
   list: (siteId: string) =>
     apiFetch<AffiliateLink[]>(
       `/affiliate-links?siteId=${encodeURIComponent(siteId)}`,

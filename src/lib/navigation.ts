@@ -59,6 +59,7 @@ export interface NavLeaf {
   title: string;
   url: string;
   icon: LucideIcon;
+  permission?: string;
 }
 export interface NavGroup {
   label: string;
@@ -73,14 +74,14 @@ export const navGroups: NavGroup[] = [
   {
     label: 'Website Management',
     items: [
-      { title: 'All Sites', url: '/sites', icon: Globe },
+      { title: 'All Sites', url: '/sites', icon: Globe, permission: 'site.manage' },
       { title: 'Domains', url: '/sites/s1/domains', icon: Link2 },
       { title: 'Site Settings', url: '/sites/s1/settings', icon: Settings2 },
       { title: 'Theme & Branding', url: '/sites/s1/branding', icon: Palette },
       { title: 'Navigation', url: '/sites/s1/navigation', icon: Menu },
       {
         title: 'Homepage Builder',
-        url: '/sites/s1/homepage',
+        url: '/page-builder',
         icon: LayoutTemplate,
       },
     ],
@@ -88,7 +89,7 @@ export const navGroups: NavGroup[] = [
   {
     label: 'Content',
     items: [
-      { title: 'All Content', url: '/content', icon: FileText },
+      { title: 'All Content', url: '/content', icon: FileText, permission: 'content.create' },
       { title: 'Articles', url: '/content/articles', icon: Newspaper },
       { title: 'Pages', url: '/content/pages', icon: File },
       { title: 'Editorial Workflow', url: '/editorial', icon: GitPullRequest },
@@ -103,7 +104,7 @@ export const navGroups: NavGroup[] = [
   {
     label: 'Product Catalog',
     items: [
-      { title: 'Products', url: '/products', icon: Package },
+      { title: 'Products', url: '/products', icon: Package, permission: 'product.create' },
       { title: 'Brands', url: '/brands', icon: Tag },
       {
         title: 'Product Categories',
@@ -120,7 +121,7 @@ export const navGroups: NavGroup[] = [
   {
     label: 'Editorial & Reviews',
     items: [
-      { title: 'Reviews', url: '/reviews', icon: Star },
+      { title: 'Reviews', url: '/reviews', icon: Star, permission: 'review.create' },
       {
         title: 'Review Methodologies',
         url: '/review-methodologies',
@@ -135,7 +136,7 @@ export const navGroups: NavGroup[] = [
   {
     label: 'Affiliate',
     items: [
-      { title: 'Affiliate Overview', url: '/affiliate', icon: TrendingUp },
+      { title: 'Affiliate Overview', url: '/affiliate', icon: TrendingUp, permission: 'affiliate.manage' },
       { title: 'Networks', url: '/affiliate/networks', icon: Network },
       { title: 'Merchants', url: '/affiliate/merchants', icon: Store },
       { title: 'Affiliate Links', url: '/affiliate/links', icon: Link },
@@ -156,9 +157,11 @@ export const navGroups: NavGroup[] = [
   {
     label: 'Media & SEO',
     items: [
-      { title: 'Media Library', url: '/media', icon: Image },
+      { title: 'Media Library', url: '/media', icon: Image, permission: 'media.upload' },
+      { title: 'Authors', url: '/authors', icon: Users, permission: 'content.create' },
       { title: 'SEO Overview', url: '/seo', icon: Search },
       { title: 'Redirects', url: '/seo/redirects', icon: ArrowRightLeft },
+      { title: 'Tags', url: '/tags', icon: Tag, permission: 'tag.manage' },
       { title: 'Sitemap', url: '/seo/sitemap', icon: Map },
       { title: 'SEO Settings', url: '/seo/settings', icon: Wrench },
     ],
@@ -166,7 +169,7 @@ export const navGroups: NavGroup[] = [
   {
     label: 'Analytics',
     items: [
-      { title: 'Overview', url: '/analytics', icon: BarChart3 },
+      { title: 'Overview', url: '/analytics', icon: BarChart3, permission: 'analytics.read' },
       {
         title: 'Content Analytics',
         url: '/analytics/content',
@@ -182,15 +185,16 @@ export const navGroups: NavGroup[] = [
         url: '/analytics/affiliate',
         icon: PieChart,
       },
+      { title: 'Newsletter', url: '/newsletter', icon: Mail, permission: 'newsletter.manage' },
     ],
   },
   {
     label: 'Organization',
     items: [
-      { title: 'Team Members', url: '/team', icon: Users },
+      { title: 'Team Members', url: '/team', icon: Users, permission: 'rbac.admins.read' },
       { title: 'Invitations', url: '/team/invitations', icon: Mail },
-      { title: 'Roles & Permissions', url: '/team/roles', icon: ShieldCheck },
-      { title: 'Audit Logs', url: '/audit-logs', icon: ScrollText },
+      { title: 'Roles & Permissions', url: '/team/roles', icon: ShieldCheck, permission: 'rbac.roles.read' },
+      { title: 'Audit Logs', url: '/audit-logs', icon: ScrollText, permission: 'audit.logs.read' },
     ],
   },
   {
@@ -200,6 +204,7 @@ export const navGroups: NavGroup[] = [
       { title: 'API Keys', url: '/api-keys', icon: KeyRound },
       { title: 'Webhooks', url: '/webhooks', icon: Webhook },
       { title: 'Notifications', url: '/settings/notifications', icon: Bell },
+      { title: 'Email', url: '/email', icon: Mail, permission: 'email.manage' },
       { title: 'Usage & Billing', url: '/billing', icon: CreditCard },
     ],
   },

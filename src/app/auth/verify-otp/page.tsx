@@ -2,9 +2,14 @@
 
 import { IconArrowLeft, IconShieldCheck } from '@tabler/icons-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { ApiError } from '@/lib/api/client';
+import { authApi } from '@/lib/api/auth';
 
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Card,
   CardContent,
@@ -18,8 +23,26 @@ import {
   InputOTPSlot,
 } from '@/components/ui/input-otp';
 
-export default function VerifyOtpPage() {
+function VerifyOtpForm() {
+  const params = useSearchParams();
+  const [email, setEmail] = useState(params.get('email') ?? '');
   const [otp, setOtp] = useState('');
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function verify(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setError(''); setLoading(true);
+    try { await authApi.verifyEmail(email, otp); setMessage('Email verified. You can now sign in.'); }
+    catch (cause) { setError(cause instanceof ApiError ? cause.message : 'Unable to verify email'); }
+    finally { setLoading(false); }
+  }
+
+  async function resend() {
+    setError('');
+    try { setMessage((await authApi.resendEmailOtp(email)).message); }
+    catch (cause) { setError(cause instanceof ApiError ? cause.message : 'Unable to resend code'); }
+  }
   
   return (
     <main className="flex min-h-screen items-center justify-center bg-background p-6 text-foreground">
@@ -48,7 +71,8 @@ export default function VerifyOtpPage() {
         </CardHeader>
 
         <CardContent>
-          <form action="/reset-password" className="space-y-6">
+          <form onSubmit={verify} className="space-y-6">
+            <div className="space-y-2"><Label htmlFor="email">Email address</Label><Input id="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></div>
             <InputOTP
               maxLength={6}
               value={otp}
@@ -70,16 +94,18 @@ export default function VerifyOtpPage() {
             <Button
               type="submit"
               className="h-10 w-full"
-              disabled={otp.length !== 6}
+              disabled={loading || otp.length !== 6}
             >
-              Verify code
+              {loading ? 'Verifying…' : 'Verify email'}
             </Button>
+            {(error || message) && <p role="alert" className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">{error || message}</p>}
 
             <p className="text-center font-medium text-xs text-muted-foreground">
               Didn&apos;t receive the code?{' '}
               <button
                 type="button"
                 className="font-medium text-primary hover:underline"
+                onClick={() => void resend()}
               >
                 Resend code
               </button>
@@ -89,4 +115,8 @@ export default function VerifyOtpPage() {
       </Card>
     </main>
   );
+}
+
+export default function VerifyOtpPage() {
+  return <Suspense fallback={null}><VerifyOtpForm /></Suspense>;
 }

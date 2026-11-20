@@ -3,7 +3,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { PageContainer, PageHeader, MetricCard, ChartCard, EmptyState, LoadingSkeleton, ErrorState } from '@/components/ui/ui-bits';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { sitesApi } from '@/lib/api/sites';
 import { analyticsApi } from '@/lib/api/analytics';
 import { BarChart3, CalendarDays, ExternalLink, Link2, RefreshCw, TrendingUp } from 'lucide-react';
@@ -15,7 +14,11 @@ export default function AnalyticsPage() {
   const selected = siteId || sites.data?.[0]?.id || '';
   const summary = useQuery({ queryKey: ['analytics', 'summary', selected], queryFn: () => analyticsApi.summary(selected), enabled: Boolean(selected) });
   const report = useQuery({ queryKey: ['analytics', 'report', selected, from, to], queryFn: () => analyticsApi.report(selected, from, `${to}T23:59:59.999Z`), enabled: Boolean(selected) });
-  const events = report.data?.events ?? []; const clicks = report.data?.affiliateClicks ?? []; const topPages = useMemo(() => events.filter((event) => event.type === 'PAGE_VIEW').sort((a, b) => b._count._all - a._count._all).slice(0, 8), [events]);
+  const clicks = report.data?.affiliateClicks ?? [];
+  const topPages = useMemo(() => {
+    const events = report.data?.events ?? [];
+    return events.filter((event) => event.type === 'PAGE_VIEW').sort((a, b) => b._count._all - a._count._all).slice(0, 8);
+  }, [report.data?.events]);
   if (sites.isLoading) return <PageContainer><LoadingSkeleton rows={8} /></PageContainer>;
   return <PageContainer className="space-y-6"><PageHeader title="Analytics" description="Read the signals behind your publishing network." actions={<Button variant="outline" size="sm" onClick={() => { void sites.refetch(); void summary.refetch(); void report.refetch(); }}><RefreshCw /> Refresh</Button>} />
     <div className="flex flex-col gap-3 rounded-xl border bg-card p-3 md:flex-row md:items-center"><select value={selected} onChange={(event) => setSiteId(event.target.value)} className="h-9 rounded-lg border bg-background px-3 text-sm md:w-56"><option value="">Choose site</option>{(sites.data ?? []).map((site) => <option key={site.id} value={site.id}>{site.name}</option>)}</select><div className="flex items-center gap-2 text-sm text-muted-foreground"><CalendarDays className="size-4" /><input type="date" value={from} onChange={(event) => setFrom(event.target.value)} className="h-9 rounded-lg border bg-background px-2 text-foreground" /><span>to</span><input type="date" value={to} onChange={(event) => setTo(event.target.value)} className="h-9 rounded-lg border bg-background px-2 text-foreground" /></div></div>

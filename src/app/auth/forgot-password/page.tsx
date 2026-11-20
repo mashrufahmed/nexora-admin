@@ -2,6 +2,8 @@
 
 import { IconArrowLeft, IconMail } from '@tabler/icons-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -13,8 +15,29 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ApiError } from '@/lib/api/client';
+import { authApi } from '@/lib/api/auth';
 
 export default function ForgotPasswordPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      await authApi.forgotPassword(email);
+      router.replace(`/auth/reset-password?email=${encodeURIComponent(email)}`);
+    } catch (cause) {
+      setError(cause instanceof ApiError ? cause.message : 'Unable to request a reset link');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <main className="flex min-h-screen items-center justify-center bg-background p-6 text-foreground">
       <Card className="w-full max-w-md border-border/70 bg-card/90 shadow-xl">
@@ -42,7 +65,7 @@ export default function ForgotPasswordPage() {
         </CardHeader>
 
         <CardContent>
-          <form action="/verify-otp" className="space-y-5">
+          <form onSubmit={submit} className="space-y-5">
             <div className="space-y-2">
               <Label htmlFor="email">Email address</Label>
               <Input
@@ -51,12 +74,15 @@ export default function ForgotPasswordPage() {
                 type="email"
                 placeholder="you@example.com"
                 required
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
                 className="h-10 bg-background/60"
               />
             </div>
 
-            <Button type="submit" className="h-10 w-full">
-              Send verification code
+            {error && <p role="alert" className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</p>}
+            <Button type="submit" className="h-10 w-full" disabled={loading}>
+              {loading ? 'Sending…' : 'Send reset link'}
             </Button>
 
             <p className="text-center text-xs text-muted-foreground font-medium">

@@ -90,7 +90,7 @@ export function AppSidebar() {
   const path = usePathname();
   const { state } = useSidebar();
   const me = members[0];
-  const { admin, logoutLoading, logout } = useAuth();
+  const { admin, logoutLoading, logout, can } = useAuth();
   const isActive = (url: string) =>
     path === url ||
     (url !== '/dashboard' &&
@@ -112,7 +112,7 @@ export function AppSidebar() {
             <SidebarGroupLabel>{g.label}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {g.items.map((item) => (
+                {g.items.filter((item) => !item.permission || can(item.permission)).map((item) => (
                   <SidebarMenuItem key={item.url + item.title}>
                     <SidebarMenuButton
                       // asChild
