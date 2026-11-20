@@ -41,16 +41,16 @@ export function OrganizationSwitcher() {
   const { state } = useSidebar();
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
-        <SidebarMenuButton
-          size="lg"
-          className="data-[state=open]:bg-sidebar-accent"
-          tooltip={organization.name}
-        >
+      <DropdownMenuTrigger
+        render={
+          <SidebarMenuButton
+            size="lg"
+            className="data-[state=open]:bg-sidebar-accent"
+          >
           <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Layers className="size-4" />
           </span>
-          {state === 'expanded' && (
+            {state === 'expanded' && (
             <>
               <span className="grid flex-1 text-left leading-tight">
                 <span className="truncate text-sm font-semibold text-sidebar-accent-foreground">
@@ -60,9 +60,10 @@ export function OrganizationSwitcher() {
               </span>
               <ChevronsUpDown className="ml-auto size-4" />
             </>
-          )}
-        </SidebarMenuButton>
-      </DropdownMenuTrigger>
+            )}
+          </SidebarMenuButton>
+        }
+      />
       <DropdownMenuContent className="w-60" align="start">
         <DropdownMenuLabel className="text-xs text-muted-foreground">
           Organizations
@@ -115,16 +116,16 @@ export function AppSidebar() {
                 {g.items.filter((item) => !item.permission || can(item.permission)).map((item) => (
                   <SidebarMenuItem key={item.url + item.title}>
                     <SidebarMenuButton
-                      // asChild
+                      render={
+                        <Link href={item.url}>
+                          <item.icon className="size-4" />
+                          <span>{item.title}</span>
+                        </Link>
+                      }
                       isActive={isActive(item.url)}
                       tooltip={item.title}
                       className="data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[active=true]:shadow-sm"
-                    >
-                      <Link href={item.url}>
-                        <item.icon className="size-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
+                    />
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
@@ -137,11 +138,10 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger
-              // asChild
-              >
-                <SidebarMenuButton size="lg" tooltip={admin?.name ?? me.name}>
+                render={
+                  <SidebarMenuButton size="lg">
                   <ColorAvatar name={admin?.name ?? me.name} color={me.color} />
-                  {state === 'expanded' && (
+                    {state === 'expanded' && (
                     <span className="grid flex-1 text-left leading-tight">
                       <span className="truncate text-sm font-medium text-sidebar-accent-foreground">
                         {admin?.name ?? me.name}
@@ -149,8 +149,9 @@ export function AppSidebar() {
                       <span className="truncate text-xs">{admin?.email ?? me.email}</span>
                     </span>
                   )}
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
+                  </SidebarMenuButton>
+                }
+              />
               <DropdownMenuContent side="top" align="start" className="w-56">
                 <DropdownMenuItem
                 // asChild

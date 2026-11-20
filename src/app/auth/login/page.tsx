@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { authApi } from '@/lib/api/auth';
 import { ApiError } from '@/lib/api/client';
+import { useAuth } from '@/components/providers/auth-provider';
 import { IconCrown, IconEye, IconEyeOff } from '@tabler/icons-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -25,6 +26,7 @@ export default function Page() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { refresh } = useAuth();
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -32,6 +34,13 @@ export default function Page() {
     setLoading(true);
     try {
       await authApi.login(email, password);
+      try {
+        await refresh();
+      } catch (cause) {
+        throw cause instanceof ApiError
+          ? cause
+          : new ApiError('Login session could not be verified', 401);
+      }
       router.replace('/dashboard/home');
     } catch (cause) {
       setError(cause instanceof ApiError ? cause.message : 'Unable to sign in');

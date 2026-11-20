@@ -17,13 +17,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [logoutLoading, setLogoutLoading] = useState(false);
 
   const refresh = async () => {
-    try { setAdmin((await authApi.me()).admin); } catch (error) { if (error instanceof ApiError && error.status === 401) setAdmin(null); } finally { setLoading(false); }
+    try {
+      setAdmin((await authApi.me()).admin);
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) setAdmin(null);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     // Initial session loading synchronizes this provider with the API.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    void refresh();
+    void refresh().catch(() => undefined);
     const onExpired = () => { setAdmin(null); if (!PUBLIC_PATHS.includes(window.location.pathname)) router.replace('/auth/login'); };
     window.addEventListener('nexora:session-expired', onExpired);
     return () => window.removeEventListener('nexora:session-expired', onExpired);

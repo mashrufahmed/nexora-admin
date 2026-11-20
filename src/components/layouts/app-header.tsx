@@ -53,10 +53,8 @@ function Breadcrumbs() {
                 </BreadcrumbPage>
               ) : (
                 <BreadcrumbLink
-                // asChild
-                >
-                  <Link href={c.href}>{c.label}</Link>
-                </BreadcrumbLink>
+                  render={<Link href={c.href}>{c.label}</Link>}
+                />
               )}
             </BreadcrumbItem>
           </Fragment>
