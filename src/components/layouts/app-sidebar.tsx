@@ -75,24 +75,29 @@ export function AppSidebar() {
     path === url || (url !== '/dashboard/home' && path.startsWith(`${url}/`));
 
   return (
-    <Sidebar collapsible="icon" className="border-sidebar-border/70">
-      <SidebarHeader className="gap-3 p-3">
+    <Sidebar collapsible="icon" className="border-sidebar-border">
+      <SidebarHeader className="gap-4 border-b border-sidebar-border/70 px-4 py-4 group-data-[collapsible=icon]:px-3">
         <Link
           href="/dashboard/home"
-          className="flex h-9 items-center gap-2.5 px-1 outline-none ring-sidebar-ring focus-visible:ring-2"
+          className="flex h-9 items-center gap-3 rounded-md px-1 outline-none ring-sidebar-ring transition-colors focus-visible:ring-2"
         >
-          <span className="flex size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground shadow-sm">
-            <Layers className="size-4" />
+          <span className="relative flex size-8 shrink-0 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground shadow-[0_0_0_1px_rgb(249_115_22_/_0.35)]">
+            <Layers className="size-4.5" />
           </span>
           {expanded && (
-            <span className="text-[15px] font-semibold tracking-tight text-sidebar-accent-foreground">
-              Nexora
+            <span className="min-w-0">
+              <span className="block text-[15px] font-semibold tracking-tight text-sidebar-accent-foreground">
+                Nexora
+              </span>
+              <span className="block text-[10px] font-medium uppercase tracking-[0.18em] text-sidebar-foreground/45">
+                Admin workspace
+              </span>
             </span>
           )}
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="px-2 pb-2">
+      <SidebarContent className="px-3 py-3 group-data-[collapsible=icon]:px-2">
         {navGroups.map((group) => {
           const items = group.items.filter(
             (item) =>
@@ -101,12 +106,12 @@ export function AppSidebar() {
           );
           if (!items.length) return null;
           return (
-            <SidebarGroup key={group.label} className="p-0 pt-4 first:pt-1">
-              <SidebarGroupLabel className="h-7 px-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-sidebar-foreground/45">
+            <SidebarGroup key={group.label} className="p-0 pt-5 first:pt-1">
+              <SidebarGroupLabel className="h-7 px-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-sidebar-foreground/45 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
                 {group.label}
               </SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu className="gap-0.5">
+                <SidebarMenu className="gap-1">
                   {items.map((item) => (
                     <SidebarMenuItem key={`${item.url}-${item.title}`}>
                       <SidebarMenuButton
@@ -118,7 +123,7 @@ export function AppSidebar() {
                         }
                         isActive={isActive(resolveRoute(item.url))}
                         tooltip={item.title}
-                        className="relative h-9 rounded-lg px-2.5 text-[13px] font-medium text-sidebar-foreground/72 transition-colors hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:font-semibold data-[active=true]:text-sidebar-accent-foreground data-[active=true]:shadow-sm data-[active=true]:before:absolute data-[active=true]:before:left-0 data-[active=true]:before:h-5 data-[active=true]:before:w-0.5 data-[active=true]:before:rounded-full data-[active=true]:before:bg-sidebar-primary [&>svg]:text-sidebar-foreground/60 data-[active=true]:[&>svg]:text-sidebar-primary"
+                        className="relative h-9 rounded-md px-2.5 text-[13px] font-medium text-sidebar-foreground/72 transition-colors hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:font-semibold data-[active=true]:text-sidebar-accent-foreground data-[active=true]:shadow-[inset_2px_0_0_var(--sidebar-primary)] [&>svg]:text-sidebar-foreground/60 data-[active=true]:[&>svg]:text-sidebar-primary group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
                       />
                     </SidebarMenuItem>
                   ))}
@@ -129,7 +134,7 @@ export function AppSidebar() {
         })}
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border/60 p-2">
+      <SidebarFooter className="border-t border-sidebar-border/70 p-3 group-data-[collapsible=icon]:p-2">
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
@@ -138,7 +143,7 @@ export function AppSidebar() {
                   <SidebarMenuButton
                     size="lg"
                     tooltip={admin?.name ?? me.name}
-                    className="h-14 rounded-lg px-2 hover:bg-sidebar-accent"
+                    className="h-14 rounded-md px-2 hover:bg-sidebar-accent/80 focus-visible:ring-2"
                   >
                     <ColorAvatar
                       name={admin?.name ?? me.name}

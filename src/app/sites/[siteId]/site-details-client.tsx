@@ -24,6 +24,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 export default function SiteDetailsClient({ siteId }: { siteId: string }) {
   const [site, setSite] = useState<Site | null>(null);
@@ -146,7 +147,7 @@ export default function SiteDetailsClient({ siteId }: { siteId: string }) {
   if (!site)
     return (
       <PageContainer>
-        <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
+        <div role="alert" className="rounded-md border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
           {error || 'Site not found'}
         </div>
       </PageContainer>
@@ -158,7 +159,7 @@ export default function SiteDetailsClient({ siteId }: { siteId: string }) {
         variant="ghost"
         size="sm"
         className="mb-5"
-        onClick={() => (window.location.href = '/sites')}
+        render={<Link href="/sites" />}
       >
         <ArrowLeft /> All sites
       </Button>
@@ -199,6 +200,9 @@ export default function SiteDetailsClient({ siteId }: { siteId: string }) {
         <Card>
           <CardHeader>
             <CardTitle>Site details</CardTitle>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Update the identity used across your publishing workflow.
+            </p>
           </CardHeader>
           <CardContent>
             <form onSubmit={save} className="space-y-4">
@@ -231,6 +235,9 @@ export default function SiteDetailsClient({ siteId }: { siteId: string }) {
         <Card>
           <CardHeader>
             <CardTitle>Domains</CardTitle>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Connect the hostnames that should resolve to this property.
+            </p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -242,7 +249,7 @@ export default function SiteDetailsClient({ siteId }: { siteId: string }) {
                 domains.map((domain) => (
                   <div
                     key={domain.id}
-                    className="flex items-center gap-2 rounded-lg border p-3 text-sm"
+                    className="flex items-center gap-2 rounded-md border border-border/70 bg-muted/20 p-3 text-sm"
                   >
                     <Globe2 className="size-4 text-muted-foreground" />
                     <span className="min-w-0 flex-1 truncate">
@@ -255,7 +262,7 @@ export default function SiteDetailsClient({ siteId }: { siteId: string }) {
                 ))
               )}
             </div>
-            <form onSubmit={addDomain} className="flex gap-2">
+            <form onSubmit={addDomain} className="flex flex-col gap-2 sm:flex-row">
               <Input
                 value={hostname}
                 onChange={(event) => setHostname(event.target.value)}
@@ -263,7 +270,12 @@ export default function SiteDetailsClient({ siteId }: { siteId: string }) {
                 type="text"
                 required
               />
-              <Button type="submit" size="icon" aria-label="Add domain">
+              <Button
+                type="submit"
+                size="icon"
+                className="shrink-0"
+                aria-label="Add domain"
+              >
                 <Plus />
               </Button>
             </form>
@@ -273,10 +285,13 @@ export default function SiteDetailsClient({ siteId }: { siteId: string }) {
       <Card className="mt-4">
         <CardHeader>
           <CardTitle>Site key</CardTitle>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Use a key to authenticate public requests for this property.
+          </p>
         </CardHeader>
         <CardContent className="space-y-4">
           {secret ? (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <Input readOnly value={secret} />
               <Button
                 type="button"

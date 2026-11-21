@@ -4,12 +4,13 @@ import { QueryProvider } from '@/components/providers/query-provider';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { cn } from '@/lib/utils';
 import type { Metadata } from 'next';
-import { Montserrat } from 'next/font/google';
+import { Manrope, Montserrat } from 'next/font/google';
 import type { ReactNode } from 'react';
 import { Suspense } from 'react';
 import './globals.css';
 
-const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-sans' });
+const manrope = Manrope({ subsets: ['latin'], variable: '--font-manrope' });
+const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-montserrat' });
 
 export const metadata: Metadata = {
   title: 'Nexora Admin',
@@ -20,7 +21,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
-      className={cn('h-full', 'antialiased', 'font-sans', montserrat.variable)}
+      className={cn(
+        'h-full',
+        'antialiased',
+        'font-sans',
+        manrope.variable,
+        montserrat.variable,
+      )}
       suppressHydrationWarning
     >
       <body>

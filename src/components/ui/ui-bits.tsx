@@ -13,7 +13,7 @@ export function PageHeader({ title, description, actions, children }: { title: s
   return (
     <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
+        <h1 className="font-heading text-[1.75rem] font-semibold tracking-tight text-foreground sm:text-3xl">{title}</h1>
         {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
         {children}
       </div>
@@ -63,7 +63,7 @@ export const statusLabel = (s: string) => s.replace(/_/g, " ").replace(/^\w/, (c
 export function StatusBadge({ status, label, tone }: { status: string; label?: string; tone?: Tone }) {
   const t = tone ?? statusTone[status] ?? "neutral";
   return (
-    <span className={cn("inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-0.5 text-xs font-medium", toneCls[t])}>
+    <span className={cn("inline-flex items-center gap-1.5 whitespace-nowrap rounded-md border px-2 py-0.5 text-xs font-medium", toneCls[t])}>
       <span className="size-1.5 rounded-full bg-current" aria-hidden />
       {label ?? statusLabel(status)}
     </span>

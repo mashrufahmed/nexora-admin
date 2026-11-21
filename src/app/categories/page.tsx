@@ -4,13 +4,19 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   EmptyState,
   LoadingSkeleton,
   PageContainer,
   PageHeader,
 } from '@/components/ui/ui-bits';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { ApiError } from '@/lib/api/client';
 import { categoriesApi, type Category } from '@/lib/api/content';
 import { sitesApi } from '@/lib/api/sites';
@@ -64,13 +70,16 @@ export default function CategoriesPage() {
       )}
       <div className="mb-5 max-w-md space-y-2">
         <Label htmlFor="site">Site</Label>
-        <Select value={siteId || 'none'} onValueChange={(value) => setSiteId(!value || value === 'none' ? '' : value)}><SelectTrigger id="site" className="w-full"><SelectValue placeholder="Choose a site" /></SelectTrigger><SelectContent><SelectItem value="none">Choose a site</SelectItem>
-          {(sites.data ?? []).map((site) => (
-            <SelectItem key={site.id} value={site.id}>
-              {site.name}
-            </SelectItem>
-          ))}
-        </SelectContent></Select>
+        <Select value={siteId} onValueChange={(value) => setSiteId(value ?? '')}>
+          <SelectTrigger id="site" className="w-full">
+            <SelectValue placeholder="Choose a site" />
+          </SelectTrigger>
+          <SelectContent>
+            {(sites.data ?? []).map((site) => (
+              <SelectItem key={site.id} value={site.id}>{site.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       {!siteId ? (
         <EmptyState
@@ -80,9 +89,10 @@ export default function CategoriesPage() {
         />
       ) : (
         <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
-          <Card>
+          <Card className="overflow-hidden">
             <CardHeader>
               <CardTitle>Category tree</CardTitle>
+              <p className="mt-1 text-sm text-muted-foreground">A site-specific taxonomy for organizing the publishing workflow.</p>
             </CardHeader>
             <CardContent className="space-y-2">
               {categories.isLoading ? (
@@ -100,9 +110,10 @@ export default function CategoriesPage() {
               )}
             </CardContent>
           </Card>
-          <Card>
+          <Card className="overflow-hidden">
             <CardHeader>
               <CardTitle>New category</CardTitle>
+              <p className="mt-1 text-sm text-muted-foreground">Create a branch that editors can use when publishing.</p>
             </CardHeader>
             <CardContent>
               <form
@@ -144,13 +155,16 @@ export default function CategoriesPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="parent">Parent (optional)</Label>
-                  <Select value={parentId || 'none'} onValueChange={(value) => setParentId(!value || value === 'none' ? '' : value)}><SelectTrigger id="parent" className="w-full"><SelectValue placeholder="Top level" /></SelectTrigger><SelectContent><SelectItem value="none">Top level</SelectItem>
-                    {items.map((item) => (
-                      <SelectItem key={item.id} value={item.id}>
-                        {item.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent></Select>
+                  <Select value={parentId} onValueChange={(value) => setParentId(value ?? '')}>
+                    <SelectTrigger id="parent" className="w-full">
+                      <SelectValue placeholder="Top level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {items.map((item) => (
+                        <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <Button type="submit" disabled={create.isPending}>
                   <Plus /> {create.isPending ? 'Creating…' : 'Create category'}
@@ -173,7 +187,7 @@ function CategoryRow({
 }) {
   return (
     <div
-      className="rounded-lg border p-3 text-sm"
+      className="rounded-md border border-border/70 bg-muted/20 p-3 text-sm"
       style={{ marginLeft: depth * 16 }}
     >
       <p className="font-medium">{category.name}</p>

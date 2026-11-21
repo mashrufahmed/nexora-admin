@@ -144,20 +144,22 @@ export function NotificationCenter() {
 
 export function AppHeader() {
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b bg-background/92 px-3 backdrop-blur supports-backdrop-filter:bg-background/80 sm:px-5">
-      <SidebarTrigger />
-      <Separator orientation="vertical" className="mx-1 h-full" />
-      <Breadcrumbs />
-      <div className="ml-auto hidden max-w-sm flex-1 items-center justify-center px-4 lg:flex">
-        <button className="flex h-8 w-full items-center gap-2 rounded-lg border bg-muted/40 px-3 text-left text-xs text-muted-foreground transition-colors hover:bg-muted">
-          <Search className="size-3.5" />
+    <header className="sticky top-0 z-30 flex h-16 min-w-0 items-center gap-3 border-b border-border/70 bg-background/90 px-4 backdrop-blur supports-backdrop-filter:bg-background/80 sm:px-6">
+      <SidebarTrigger className="rounded-md text-muted-foreground hover:bg-muted hover:text-foreground" />
+      <Separator orientation="vertical" className="mx-1 h-5" />
+      <div className="min-w-0 flex-1">
+        <Breadcrumbs />
+      </div>
+      <div className="hidden w-full max-w-xl flex-1 items-center justify-center px-2 lg:flex xl:px-4">
+        <button className="flex h-9 w-full items-center gap-2 rounded-md border border-border/80 bg-card/60 px-3 text-left text-xs text-muted-foreground transition-colors hover:border-border hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
+          <Search className="size-3.5 text-muted-foreground/80" />
           <span className="flex-1">Search anything...</span>
-          <span className="inline-flex items-center gap-0.5 rounded border bg-background px-1.5 py-0.5 text-[10px]">
+          <span className="inline-flex items-center gap-0.5 rounded border border-border/80 bg-background px-1.5 py-0.5 text-[10px]">
             <Command className="size-2.5" /> K
           </span>
         </button>
       </div>
-      <div className="ml-auto flex items-center gap-1.5">
+      <div className="ml-auto flex shrink-0 items-center gap-1">
         <NotificationCenter />
       </div>
     </header>

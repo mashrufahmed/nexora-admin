@@ -37,7 +37,6 @@ const statuses = [
 export default function ContentPage() {
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState<(typeof statuses)[number]>('ALL');
-  const router = useRouter();
   const client = useQueryClient();
   const result = useQuery({ queryKey: ['content'], queryFn: contentApi.list });
   const archive = useMutation({
@@ -77,7 +76,7 @@ export default function ContentPage() {
             >
               <RefreshCw /> Refresh
             </Button>
-            <Button onClick={() => router.push('/content/new')}>
+            <Button render={<Link href="/content/new" />}>
               <Plus /> New content
             </Button>
           </>
@@ -92,7 +91,7 @@ export default function ContentPage() {
         </div>
       )}
       <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex max-w-md items-center gap-2 rounded-lg border bg-card px-3">
+        <div className="flex w-full max-w-md items-center gap-2 rounded-md border bg-card px-3 shadow-sm">
           <Search className="size-4 text-muted-foreground" />
           <Input
             value={query}
@@ -101,7 +100,7 @@ export default function ContentPage() {
             className="border-0 bg-transparent shadow-none focus-visible:ring-0"
           />
         </div>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5" aria-label="Filter content by status">
           {statuses.map((value) => (
             <Button
               key={value}
@@ -126,7 +125,7 @@ export default function ContentPage() {
           }
           description="Create your first article or page to start the editorial workflow."
           action={
-            <Button onClick={() => router.push('/content/new')}>
+            <Button render={<Link href="/content/new" />}>
               <Plus /> Create content
             </Button>
           }
@@ -160,13 +159,13 @@ function ContentRow({
   return (
     <Card className="transition-shadow hover:shadow-sm">
       <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/8 text-primary">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-md border border-primary/20 bg-primary/10 text-primary">
           <FileText className="size-4" />
         </span>
         <div className="min-w-0 flex-1">
           <Link
             href={`/content/${item.id}`}
-            className="block truncate font-medium hover:text-primary"
+            className="block truncate font-medium transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
           >
             {item.title}
           </Link>
@@ -189,7 +188,9 @@ function ContentRow({
             <Button
               variant="ghost"
               size="icon-sm"
-              onClick={onArchive}
+               onClick={() => {
+                 if (window.confirm('Archive this content? It will leave the active workflow.')) onArchive();
+               }}
               disabled={archiving}
               aria-label="Archive content"
             >

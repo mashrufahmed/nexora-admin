@@ -17,9 +17,12 @@ import { ApiError } from '@/lib/api/client';
 import { contentApi } from '@/lib/api/content';
 import { useMutation } from '@tanstack/react-query';
 import { ArrowLeft, FilePlus2 } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export default function NewContentPage() {
+  const router = useRouter();
   const [type, setType] = useState<'ARTICLE' | 'PAGE'>('ARTICLE');
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
@@ -34,9 +37,7 @@ export default function NewContentPage() {
         excerpt,
         body: { format: 'plain', content: body },
       }),
-    onSuccess: (item) => {
-      window.location.href = `/content/${item.id}`;
-    },
+    onSuccess: (item) => router.push(`/content/${item.id}`),
   });
   const error =
     mutation.error instanceof ApiError
@@ -50,7 +51,7 @@ export default function NewContentPage() {
         variant="ghost"
         size="sm"
         className="mb-5"
-        onClick={() => (window.location.href = '/content')}
+        render={<Link href="/content" />}
       >
         <ArrowLeft /> All content
       </Button>
@@ -83,9 +84,10 @@ export default function NewContentPage() {
         }}
         className="grid gap-4 lg:grid-cols-[1fr_320px]"
       >
-        <Card>
+        <Card className="overflow-hidden">
           <CardHeader>
             <CardTitle>Story details</CardTitle>
+            <p className="mt-1 text-sm text-muted-foreground">Build the editorial core before choosing how it should be published.</p>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="space-y-2">
@@ -131,9 +133,10 @@ export default function NewContentPage() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="overflow-hidden">
           <CardHeader>
             <CardTitle>Publishing setup</CardTitle>
+            <p className="mt-1 text-sm text-muted-foreground">Keep URLs and content type consistent from the first draft.</p>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="space-y-2">

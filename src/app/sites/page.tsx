@@ -132,14 +132,19 @@ export default function SitesPage() {
           {error}
         </div>
       )}
-      <div className="mb-5 flex max-w-md items-center gap-2 rounded-lg border bg-card px-3">
-        <Search className="size-4 text-muted-foreground" />
-        <Input
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search sites…"
-          className="border-0 bg-transparent shadow-none focus-visible:ring-0"
-        />
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex w-full max-w-md items-center gap-2 rounded-md border bg-card px-3 shadow-sm">
+          <Search className="size-4 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search sites…"
+            className="border-0 bg-transparent shadow-none focus-visible:ring-0"
+          />
+        </div>
+        <p className="text-sm text-muted-foreground">
+          {filtered.length} {filtered.length === 1 ? 'property' : 'properties'}
+        </p>
       </div>
       {loading ? (
         <LoadingSkeleton rows={5} />
@@ -159,22 +164,22 @@ export default function SitesPage() {
           {filtered.map((site) => (
             <Card
               key={site.id}
-              className="group transition-shadow hover:shadow-md"
+              className="group overflow-hidden transition-shadow hover:shadow-md"
             >
               <CardContent className="p-5">
                 <div className="flex items-start justify-between gap-3">
-                  <span className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <span className="flex size-10 items-center justify-center rounded-md border border-primary/20 bg-primary/10 text-primary">
                     <Globe2 className="size-5" />
                   </span>
                   <StatusBadge status={site.status.toLowerCase()} />
                 </div>
-                <h2 className="mt-5 truncate text-lg font-semibold">
+                <h2 className="mt-4 truncate text-lg font-semibold tracking-tight">
                   {site.name}
                 </h2>
                 <p className="mt-1 truncate text-sm text-muted-foreground">
                   {site.slug}
                 </p>
-                <div className="mt-5 grid grid-cols-2 gap-3 border-y py-3 text-sm">
+                <div className="mt-5 grid grid-cols-2 gap-3 border-y border-border/70 py-3 text-sm">
                   <div>
                     <span className="block text-xs text-muted-foreground">
                       Domains
@@ -233,6 +238,9 @@ export default function SitesPage() {
                 minLength={2}
                 required
               />
+              <p className="text-xs text-muted-foreground">
+                Use a stable, lowercase URL slug for this property.
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="site-slug">Slug</Label>

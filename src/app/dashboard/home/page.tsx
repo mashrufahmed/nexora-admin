@@ -67,6 +67,8 @@ export default function DashboardHome() {
     staleTime: 15_000,
   });
   const reportData = (report.data ?? {}) as AnalyticsReport;
+  const eventRows = (reportData.events ?? []).slice(0, 8);
+  const eventTotal = eventRows.reduce((total, event) => total + event._count._all, 0);
   const pageViews = Number(summary.data?.pageViews ?? 0);
   const affiliateClicks = Number(summary.data?.affiliateClicks ?? 0);
   const published =
@@ -113,7 +115,7 @@ export default function DashboardHome() {
               <RefreshCw /> Refresh
             </Button>
             {can('content.create') && (
-              <Button onClick={() => (window.location.href = '/content/new')}>
+              <Button render={<Link href="/content/new" />}>
                 <Plus /> New content
               </Button>
             )}
@@ -122,7 +124,7 @@ export default function DashboardHome() {
       >
         <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">
-            <span className="size-2 rounded-full bg-emerald-500" /> Live backend
+            <span className="size-2 rounded-full bg-success" /> Live backend
             data
           </span>
           <span>·</span>
@@ -181,29 +183,33 @@ export default function DashboardHome() {
           description="Aggregated analytics report for the selected site"
         >
           <div className="space-y-4 pt-2">
-            {(reportData.events ?? []).slice(0, 8).map((event) => (
+            {eventRows.map((event) => (
               <div
                 key={`${event.type}-${event.path}`}
-                className="flex items-center gap-3"
+                className="space-y-2"
               >
-                <span className="flex size-9 items-center justify-center rounded-lg bg-primary/8 text-primary">
-                  {event.type === 'PAGE_VIEW' ? (
-                    <TrendingUp className="size-4" />
-                  ) : (
-                    <Link2 className="size-4" />
-                  )}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium">
-                    {event.path || event.type.replace('_', ' ')}
+                <div className="flex items-center gap-3">
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                    {event.type === 'PAGE_VIEW' ? <TrendingUp className="size-4" /> : <Link2 className="size-4" />}
                   </span>
-                  <span className="text-xs text-muted-foreground">
-                    {event.type.replace('_', ' ')}
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium">
+                      {event.path || event.type.replace('_', ' ')}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {event.type.replace('_', ' ')}
+                    </span>
                   </span>
-                </span>
-                <span className="font-semibold tabular-nums">
-                  {event._count._all.toLocaleString()}
-                </span>
+                  <span className="font-semibold tabular-nums">
+                    {event._count._all.toLocaleString()}
+                  </span>
+                </div>
+                <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-primary transition-[width] duration-500"
+                    style={{ width: `${eventTotal ? Math.max(4, (event._count._all / eventTotal) * 100) : 0}%` }}
+                  />
+                </div>
               </div>
             ))}
             {!reportData.events?.length && (
@@ -222,7 +228,7 @@ export default function DashboardHome() {
               <Link
                 href={`/sites/${site.id}`}
                 key={site.id}
-                className="flex items-center gap-3 rounded-lg p-1.5 hover:bg-muted/50"
+                className="flex items-center gap-3 rounded-md p-2 transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
               >
                 <span className="flex size-9 items-center justify-center rounded-lg bg-primary/8 text-primary">
                   <Globe2 className="size-4" />
@@ -257,7 +263,7 @@ export default function DashboardHome() {
                 <Link
                   href={`/content/${item.id}`}
                   key={item.id}
-                  className="flex items-center gap-3 rounded-lg p-2.5 hover:bg-muted/50"
+                  className="flex items-center gap-3 rounded-md p-2.5 transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                 >
                   <FileText className="size-4 text-primary" />
                   <span className="min-w-0 flex-1 truncate text-sm font-medium">
@@ -273,11 +279,7 @@ export default function DashboardHome() {
                 The queue is clear.
               </p>
             )}
-            <Button
-              variant="outline"
-              className="mt-2 w-full"
-              onClick={() => (window.location.href = '/content')}
-            >
+            <Button variant="outline" className="mt-2 w-full" render={<Link href="/content" />}>
               Open content <ArrowUpRight />
             </Button>
           </CardContent>
@@ -328,32 +330,20 @@ export default function DashboardHome() {
             </p>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Button
-              variant="outline"
-              className="w-full justify-between"
-              onClick={() => (window.location.href = '/products')}
-            >
+            <Button variant="outline" className="w-full justify-between" render={<Link href="/products" />}>
               Manage products <Package />
             </Button>
-            <Button
-              variant="outline"
-              className="w-full justify-between"
-              onClick={() => (window.location.href = '/reviews')}
-            >
+            <Button variant="outline" className="w-full justify-between" render={<Link href="/reviews" />}>
               Review testing queue <Sparkles />
             </Button>
-            <Button
-              variant="outline"
-              className="w-full justify-between"
-              onClick={() => (window.location.href = '/affiliate')}
-            >
+            <Button variant="outline" className="w-full justify-between" render={<Link href="/affiliate" />}>
               Affiliate links <Link2 />
             </Button>
           </CardContent>
         </Card>
-        <Card className="overflow-hidden bg-primary text-primary-foreground">
+        <Card className="overflow-hidden border-primary/30 bg-primary text-primary-foreground shadow-md">
           <CardHeader>
-            <div className="flex size-10 items-center justify-center rounded-xl bg-[#d8ed68] text-primary">
+            <div className="flex size-10 items-center justify-center rounded-md bg-primary-foreground/15 text-primary-foreground">
               <ImageIcon className="size-5" />
             </div>
             <CardTitle className="mt-4 text-xl">Keep publishing</CardTitle>
@@ -362,10 +352,7 @@ export default function DashboardHome() {
             </p>
           </CardHeader>
           <CardContent>
-            <Button
-              variant="secondary"
-              onClick={() => (window.location.href = '/content')}
-            >
+            <Button variant="secondary" render={<Link href="/content" />}>
               View content <ArrowUpRight />
             </Button>
           </CardContent>

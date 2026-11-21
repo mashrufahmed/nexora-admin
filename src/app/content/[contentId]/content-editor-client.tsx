@@ -37,7 +37,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 function CategoryCheckboxDropdown({ categories, value, onChange }: { categories: Array<{ id: string; name: string }>; value: string[]; onChange: (value: string[]) => void }) {
-  return <div className="space-y-2 rounded-lg border bg-background p-2">
+  return <div className="space-y-2 rounded-md border border-border/70 bg-background p-2">
     {categories.length === 0 ? <p className="px-2 py-1 text-sm text-muted-foreground">No categories for this site.</p> : categories.map((category) => <label key={category.id} className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted">
       <input type="checkbox" checked={value.includes(category.id)} onChange={(event) => onChange(event.target.checked ? [...value, category.id] : value.filter((id) => id !== category.id))} />
       {category.name}
@@ -120,7 +120,7 @@ function ContentEditorForm({ content }: { content: Content }) {
   );
 
   return (
-    <PageContainer>
+    <PageContainer className="pb-10">
       <Button
         variant="ghost"
         size="sm"
@@ -156,8 +156,11 @@ function ContentEditorForm({ content }: { content: Content }) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => archive.mutate()}
+                onClick={() => {
+                  if (window.confirm('Archive this content? It will leave the active workflow.')) archive.mutate();
+                }}
                 disabled={archive.isPending}
+                aria-label="Archive content"
               >
                 <Archive />
               </Button>
@@ -185,9 +188,10 @@ function ContentEditorForm({ content }: { content: Content }) {
         </div>
       )}
       <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
-        <Card>
+        <Card className="overflow-hidden">
           <CardHeader>
             <CardTitle>Editorial draft</CardTitle>
+            <p className="mt-1 text-sm text-muted-foreground">Keep the story focused, readable, and ready for review.</p>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="space-y-2">
@@ -218,9 +222,10 @@ function ContentEditorForm({ content }: { content: Content }) {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="overflow-hidden">
           <CardHeader>
             <CardTitle>Publishing</CardTitle>
+            <p className="mt-1 text-sm text-muted-foreground">Choose a destination and control when this content becomes visible.</p>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="space-y-2">
@@ -259,7 +264,7 @@ function ContentEditorForm({ content }: { content: Content }) {
               </div>
             )}
             {siteId && ['DRAFT', 'IN_REVIEW'].includes(content.status) && (
-              <div className="space-y-2 rounded-lg border border-dashed p-3">
+              <div className="space-y-2 rounded-md border border-dashed border-primary/30 bg-primary/5 p-3">
                 <Label htmlFor="scheduled-at">Schedule publication</Label>
                 <Input
                   id="scheduled-at"
@@ -277,15 +282,15 @@ function ContentEditorForm({ content }: { content: Content }) {
                 </Button>
               </div>
             )}
-            <div className="rounded-lg border bg-muted/30 p-3 text-xs leading-5 text-muted-foreground">
-              <CheckCircle2 className="mb-2 size-4 text-emerald-600" />
+            <div className="rounded-md border bg-muted/30 p-3 text-xs leading-5 text-muted-foreground">
+              <CheckCircle2 className="mb-2 size-4 text-success" />
               Saving keeps this draft private. Publishing makes it visible on
               the selected site.
             </div>
           </CardContent>
         </Card>
       </div>
-      <Card className="mt-4">
+      <Card className="mt-4 overflow-hidden">
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><History className="size-4" /> Revision history</CardTitle>
         </CardHeader>

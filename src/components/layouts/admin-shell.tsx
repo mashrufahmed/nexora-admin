@@ -20,11 +20,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-svh w-full bg-muted/20">
+      <div className="flex min-h-svh w-full bg-background">
         <AppSidebar />
         <SidebarInset className="min-w-0 bg-background">
           <AppHeader />
-          <main className="min-h-[calc(100svh-3.5rem)] flex-1">{children}</main>
+          <main className="min-h-[calc(100svh-4rem)] flex-1">{children}</main>
         </SidebarInset>
       </div>
     </SidebarProvider>
