@@ -1,17 +1,174 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
-import { PageContainer, PageHeader } from '@/components/ui/ui-bits';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { contentApi } from '@/lib/api/content';
+import { PageContainer, PageHeader } from '@/components/ui/ui-bits';
 import { ApiError } from '@/lib/api/client';
+import { contentApi } from '@/lib/api/content';
+import { useMutation } from '@tanstack/react-query';
 import { ArrowLeft, FilePlus2 } from 'lucide-react';
 import { useState } from 'react';
 
-export default function NewContentPage() { const [type, setType] = useState<'ARTICLE' | 'PAGE'>('ARTICLE'); const [title, setTitle] = useState(''); const [slug, setSlug] = useState(''); const [excerpt, setExcerpt] = useState(''); const [body, setBody] = useState(''); const mutation = useMutation({ mutationFn: () => contentApi.create({ type, title, slug, excerpt, body: { format: 'plain', content: body } }), onSuccess: (item) => { window.location.href = `/content/${item.id}`; } }); const error = mutation.error instanceof ApiError ? mutation.error.message : mutation.error ? 'Unable to create content' : '';
-  return <PageContainer><Button variant="ghost" size="sm" className="mb-5" onClick={() => window.location.href = '/content'}><ArrowLeft /> All content</Button><PageHeader title="Create content" description="Start with a clear title. You can refine the story as it moves through review." actions={<Button type="submit" form="content-form" disabled={mutation.isPending}><FilePlus2 /> {mutation.isPending ? 'Creating…' : 'Create draft'}</Button>} />{error && <div role="alert" className="mb-5 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</div>}<form id="content-form" onSubmit={(event) => { event.preventDefault(); mutation.mutate(); }} className="grid gap-4 lg:grid-cols-[1fr_320px]"><Card><CardHeader><CardTitle>Story details</CardTitle></CardHeader><CardContent className="space-y-5"><div className="space-y-2"><Label htmlFor="title">Title</Label><Input id="title" value={title} onChange={(event) => { setTitle(event.target.value); if (!slug) setSlug(event.target.value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')); }} placeholder="The headline your reader will see" required minLength={2} /></div><div className="space-y-2"><Label htmlFor="excerpt">Excerpt</Label><Textarea id="excerpt" value={excerpt} onChange={(event) => setExcerpt(event.target.value)} placeholder="A short description for cards and search results" maxLength={500} /></div><div className="space-y-2"><Label htmlFor="body">Body</Label><Textarea id="body" value={body} onChange={(event) => setBody(event.target.value)} placeholder="Write the first draft…" className="min-h-80" /></div></CardContent></Card><Card><CardHeader><CardTitle>Publishing setup</CardTitle></CardHeader><CardContent className="space-y-5"><div className="space-y-2"><Label>Content type</Label><Select value={type} onValueChange={(value) => setType(value as 'ARTICLE' | 'PAGE')}><SelectTrigger className="w-full"><SelectValue placeholder="Choose type" /></SelectTrigger><SelectContent><SelectItem value="ARTICLE">Article</SelectItem><SelectItem value="PAGE">Page</SelectItem></SelectContent></Select></div><div className="space-y-2"><Label htmlFor="slug">Slug</Label><Input id="slug" value={slug} onChange={(event) => setSlug(event.target.value)} required minLength={2} pattern="[a-z0-9]+(?:-[a-z0-9]+)*" /></div><p className="text-xs leading-5 text-muted-foreground">The draft stays private until it is submitted for review and published to a site.</p></CardContent></Card></form></PageContainer>; }
+export default function NewContentPage() {
+  const [type, setType] = useState<'ARTICLE' | 'PAGE'>('ARTICLE');
+  const [title, setTitle] = useState('');
+  const [slug, setSlug] = useState('');
+  const [excerpt, setExcerpt] = useState('');
+  const [body, setBody] = useState('');
+  const mutation = useMutation({
+    mutationFn: () =>
+      contentApi.create({
+        type,
+        title,
+        slug,
+        excerpt,
+        body: { format: 'plain', content: body },
+      }),
+    onSuccess: (item) => {
+      window.location.href = `/content/${item.id}`;
+    },
+  });
+  const error =
+    mutation.error instanceof ApiError
+      ? mutation.error.message
+      : mutation.error
+        ? 'Unable to create content'
+        : '';
+  return (
+    <PageContainer>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="mb-5"
+        onClick={() => (window.location.href = '/content')}
+      >
+        <ArrowLeft /> All content
+      </Button>
+      <PageHeader
+        title="Create content"
+        description="Start with a clear title. You can refine the story as it moves through review."
+        actions={
+          <Button
+            type="submit"
+            form="content-form"
+            disabled={mutation.isPending}
+          >
+            <FilePlus2 /> {mutation.isPending ? 'Creating…' : 'Create draft'}
+          </Button>
+        }
+      />
+      {error && (
+        <div
+          role="alert"
+          className="mb-5 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+        >
+          {error}
+        </div>
+      )}
+      <form
+        id="content-form"
+        onSubmit={(event) => {
+          event.preventDefault();
+          mutation.mutate();
+        }}
+        className="grid gap-4 lg:grid-cols-[1fr_320px]"
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle>Story details</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                value={title}
+                onChange={(event) => {
+                  setTitle(event.target.value);
+                  if (!slug)
+                    setSlug(
+                      event.target.value
+                        .toLowerCase()
+                        .trim()
+                        .replace(/[^a-z0-9]+/g, '-')
+                        .replace(/^-|-$/g, ''),
+                    );
+                }}
+                placeholder="The headline your reader will see"
+                required
+                minLength={2}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="excerpt">Excerpt</Label>
+              <Textarea
+                id="excerpt"
+                value={excerpt}
+                onChange={(event) => setExcerpt(event.target.value)}
+                placeholder="A short description for cards and search results"
+                maxLength={500}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="body">Body</Label>
+              <Textarea
+                id="body"
+                value={body}
+                onChange={(event) => setBody(event.target.value)}
+                placeholder="Write the first draft…"
+                className="min-h-80"
+              />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Publishing setup</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <div className="space-y-2">
+              <Label>Content type</Label>
+              <Select
+                value={type}
+                onValueChange={(value) => setType(value as 'ARTICLE' | 'PAGE')}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Choose type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ARTICLE">Article</SelectItem>
+                  <SelectItem value="PAGE">Page</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="slug">Slug</Label>
+              <Input
+                id="slug"
+                value={slug}
+                onChange={(event) => setSlug(event.target.value)}
+                required
+                minLength={2}
+                pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
+              />
+            </div>
+            <p className="text-xs leading-5 text-muted-foreground">
+              The draft stays private until it is submitted for review and
+              published to a site.
+            </p>
+          </CardContent>
+        </Card>
+      </form>
+    </PageContainer>
+  );
+}

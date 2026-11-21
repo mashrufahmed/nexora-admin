@@ -1,27 +1,288 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { PageContainer, PageHeader, EmptyState, LoadingSkeleton } from '@/components/ui/ui-bits';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { mediaApi, type MediaAsset } from '@/lib/api/media';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  EmptyState,
+  LoadingSkeleton,
+  PageContainer,
+  PageHeader,
+} from '@/components/ui/ui-bits';
 import { ApiError } from '@/lib/api/client';
-import { FileImage, ImagePlus, Pencil, RefreshCw, Search, Trash2, UploadCloud } from 'lucide-react';
+import { mediaApi, type MediaAsset } from '@/lib/api/media';
+import { sitesApi } from '@/lib/api/sites';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  FileImage,
+  ImagePlus,
+  Pencil,
+  RefreshCw,
+  Search,
+  Trash2,
+  UploadCloud,
+} from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 
-const bytes = (value: number) => value < 1024 * 1024 ? `${Math.max(1, Math.round(value / 1024))} KB` : `${(value / 1024 / 1024).toFixed(1)} MB`;
+const bytes = (value: number) =>
+  value < 1024 * 1024
+    ? `${Math.max(1, Math.round(value / 1024))} KB`
+    : `${(value / 1024 / 1024).toFixed(1)} MB`;
 
-export default function MediaPage() { const [search, setSearch] = useState(''); const [siteId, setSiteId] = useState(''); const [editing, setEditing] = useState<MediaAsset | null>(null); const [error, setError] = useState(''); const input = useRef<HTMLInputElement>(null); const client = useQueryClient(); const result = useQuery({ queryKey: ['media', siteId, search], queryFn: () => mediaApi.list(siteId || undefined, search || undefined) }); const update = useMutation({ mutationFn: (value: { id: string; alt: string; caption: string }) => mediaApi.update(value.id, { alt: value.alt, caption: value.caption }), onSuccess: () => { setEditing(null); void client.invalidateQueries({ queryKey: ['media'] }); } }); const remove = useMutation({ mutationFn: mediaApi.remove, onSuccess: () => void client.invalidateQueries({ queryKey: ['media'] }) }); const upload = useMutation({ mutationFn: (file: File) => mediaApi.upload(file, siteId), onSuccess: () => void client.invalidateQueries({ queryKey: ['media'] }) }); const items = useMemo(() => result.data ?? [], [result.data]); const uploadFile = (file?: File) => { if (!file) return; setError(''); upload.mutate(file, { onError: (cause) => setError(cause instanceof ApiError ? cause.message : 'Unable to upload this file') }); };
-  return <PageContainer><PageHeader title="Media library" description="Keep the visual system behind every site organized and ready to publish." actions={<><Button variant="outline" size="sm" onClick={() => void result.refetch()}><RefreshCw /> Refresh</Button><Button onClick={() => input.current?.click()} disabled={upload.isPending}><UploadCloud /> {upload.isPending ? 'Uploading…' : 'Upload media'}</Button><input ref={input} type="file" accept="image/png,image/jpeg,image/gif,image/webp" className="hidden" onChange={(event) => { uploadFile(event.target.files?.[0]); event.currentTarget.value = ''; }} /></>} />
-    {error && <div role="alert" className="mb-5 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</div>}
-    <div className="mb-5 flex max-w-md items-center gap-2 rounded-lg border bg-card px-3"><Search className="size-4 text-muted-foreground" /><Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search filenames…" className="border-0 bg-transparent shadow-none focus-visible:ring-0" /></div>
-    {result.isLoading ? <LoadingSkeleton rows={6} /> : items.length === 0 ? <EmptyState icon={FileImage} title="Your library is quiet" description="Upload a PNG, JPEG, GIF or WebP to give your next story a visual anchor." action={<Button onClick={() => input.current?.click()}><ImagePlus /> Upload an image</Button>} /> : <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{items.map((asset) => <MediaCard key={asset.id} asset={asset} onEdit={() => setEditing(asset)} onDelete={() => { if (window.confirm('Delete this media asset?')) remove.mutate(asset.id); }} />)}</div>}
-    <Dialog open={Boolean(editing)} onOpenChange={(open) => !open && setEditing(null)}><DialogContent><DialogHeader><DialogTitle>Edit media details</DialogTitle><DialogDescription>Keep alt text meaningful so every published image is accessible.</DialogDescription></DialogHeader>{editing && <form onSubmit={(event) => { event.preventDefault(); const form = new FormData(event.currentTarget); update.mutate({ id: editing.id, alt: String(form.get('alt') ?? ''), caption: String(form.get('caption') ?? '') }); }} className="space-y-4"><div className="space-y-2"><Label htmlFor="alt">Alt text</Label><Input id="alt" name="alt" defaultValue={editing.alt ?? ''} /></div><div className="space-y-2"><Label htmlFor="caption">Caption</Label><Textarea id="caption" name="caption" defaultValue={editing.caption ?? ''} /></div><DialogFooter><Button type="button" variant="outline" onClick={() => setEditing(null)}>Cancel</Button><Button type="submit" disabled={update.isPending}>{update.isPending ? 'Saving…' : 'Save details'}</Button></DialogFooter></form>}</DialogContent></Dialog>
-  </PageContainer>;
+export default function MediaPage() {
+  const [search, setSearch] = useState('');
+  const [siteId, setSiteId] = useState('');
+  const [editing, setEditing] = useState<MediaAsset | null>(null);
+  const [error, setError] = useState('');
+  const input = useRef<HTMLInputElement>(null);
+  const client = useQueryClient();
+  const sites = useQuery({ queryKey: ['sites'], queryFn: sitesApi.list });
+  const result = useQuery({
+    queryKey: ['media', siteId, search],
+    queryFn: () => mediaApi.list(siteId || undefined, search || undefined),
+  });
+  const update = useMutation({
+    mutationFn: (value: { id: string; alt: string; caption: string }) =>
+      mediaApi.update(value.id, { alt: value.alt, caption: value.caption }),
+    onSuccess: () => {
+      setEditing(null);
+      void client.invalidateQueries({ queryKey: ['media'] });
+    },
+  });
+  const remove = useMutation({
+    mutationFn: mediaApi.remove,
+    onSuccess: () => void client.invalidateQueries({ queryKey: ['media'] }),
+  });
+  const upload = useMutation({
+    mutationFn: (file: File) => mediaApi.upload(file, siteId),
+    onSuccess: () => void client.invalidateQueries({ queryKey: ['media'] }),
+  });
+  const items = useMemo(() => result.data ?? [], [result.data]);
+  const uploadFile = (file?: File) => {
+    if (!file) return;
+    setError('');
+    upload.mutate(file, {
+      onError: (cause) =>
+        setError(
+          cause instanceof ApiError
+            ? cause.message
+            : 'Unable to upload this file',
+        ),
+    });
+  };
+  return (
+    <PageContainer>
+      <PageHeader
+        title="Media library"
+        description="Keep the visual system behind every site organized and ready to publish."
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void result.refetch()}
+            >
+              <RefreshCw /> Refresh
+            </Button>
+            <Button
+              onClick={() => input.current?.click()}
+              disabled={upload.isPending}
+            >
+              <UploadCloud /> {upload.isPending ? 'Uploading…' : 'Upload media'}
+            </Button>
+            <input
+              ref={input}
+              type="file"
+              accept="image/png,image/jpeg,image/gif,image/webp"
+              className="hidden"
+              onChange={(event) => {
+                uploadFile(event.target.files?.[0]);
+                event.currentTarget.value = '';
+              }}
+            />
+          </>
+        }
+      />
+      {error && (
+        <div
+          role="alert"
+          className="mb-5 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+        >
+          {error}
+        </div>
+      )}
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row">
+        <Select value={siteId} onValueChange={(value) => setSiteId(value ?? '')}>
+          <SelectTrigger aria-label="Filter by site" className="w-full sm:w-48"><SelectValue placeholder="All sites" /></SelectTrigger>
+          <SelectContent><SelectItem value="">All sites</SelectItem>
+          {(sites.data ?? []).map((site) => (
+            <SelectItem key={site.id} value={site.id}>
+              {site.name}
+            </SelectItem>
+          ))}
+          </SelectContent>
+        </Select>
+        <div className="flex max-w-md flex-1 items-center gap-2 rounded-lg border bg-card px-3">
+          <Search className="size-4 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search filenames…"
+            className="border-0 bg-transparent shadow-none focus-visible:ring-0"
+          />
+        </div>
+      </div>
+      {result.isLoading ? (
+        <LoadingSkeleton rows={6} />
+      ) : items.length === 0 ? (
+        <EmptyState
+          icon={FileImage}
+          title="Your library is quiet"
+          description="Upload a PNG, JPEG, GIF or WebP to give your next story a visual anchor."
+          action={
+            <Button onClick={() => input.current?.click()}>
+              <ImagePlus /> Upload an image
+            </Button>
+          }
+        />
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {items.map((asset) => (
+            <MediaCard
+              key={asset.id}
+              asset={asset}
+              onEdit={() => setEditing(asset)}
+              onDelete={() => {
+                if (window.confirm('Delete this media asset?'))
+                  remove.mutate(asset.id);
+              }}
+            />
+          ))}
+        </div>
+      )}
+      <Dialog
+        open={Boolean(editing)}
+        onOpenChange={(open) => !open && setEditing(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit media details</DialogTitle>
+            <DialogDescription>
+              Keep alt text meaningful so every published image is accessible.
+            </DialogDescription>
+          </DialogHeader>
+          {editing && (
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                const form = new FormData(event.currentTarget);
+                update.mutate({
+                  id: editing.id,
+                  alt: String(form.get('alt') ?? ''),
+                  caption: String(form.get('caption') ?? ''),
+                });
+              }}
+              className="space-y-4"
+            >
+              <div className="space-y-2">
+                <Label htmlFor="alt">Alt text</Label>
+                <Input id="alt" name="alt" defaultValue={editing.alt ?? ''} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="caption">Caption</Label>
+                <Textarea
+                  id="caption"
+                  name="caption"
+                  defaultValue={editing.caption ?? ''}
+                />
+              </div>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEditing(null)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={update.isPending}>
+                  {update.isPending ? 'Saving…' : 'Save details'}
+                </Button>
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+    </PageContainer>
+  );
 }
 
-function MediaCard({ asset, onEdit, onDelete }: { asset: MediaAsset; onEdit: () => void; onDelete: () => void }) { return <Card className="group overflow-hidden"><div className="relative aspect-[4/3] bg-muted">{asset.url ? <img src={asset.url} alt={asset.alt ?? asset.originalFilename} className="size-full object-cover" /> : <div className="flex size-full items-center justify-center"><FileImage className="size-10 text-muted-foreground/50" /></div>}<div className="absolute inset-x-0 bottom-0 flex translate-y-full items-center justify-end gap-1 bg-gradient-to-t from-black/70 to-transparent px-3 pb-3 pt-8 transition-transform group-hover:translate-y-0"><Button variant="ghost" size="icon-sm" className="text-white hover:bg-white/15 hover:text-white" onClick={onEdit} aria-label="Edit media"><Pencil /></Button><Button variant="ghost" size="icon-sm" className="text-white hover:bg-white/15 hover:text-white" onClick={onDelete} aria-label="Delete media"><Trash2 /></Button></div></div><CardContent className="p-3"><p className="truncate text-sm font-medium">{asset.originalFilename}</p><p className="mt-1 text-xs text-muted-foreground">{asset.mimeType.replace('image/', '').toUpperCase()} · {bytes(asset.size)}</p>{asset.alt && <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">{asset.alt}</p>}</CardContent></Card>; }
+function MediaCard({
+  asset,
+  onEdit,
+  onDelete,
+}: {
+  asset: MediaAsset;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  return (
+    <Card className="group overflow-hidden">
+      <div className="relative aspect-[4/3] bg-muted">
+        {asset.url ? (
+          <img
+            src={asset.url}
+            alt={asset.alt ?? asset.originalFilename}
+            className="size-full object-cover"
+          />
+        ) : (
+          <div className="flex size-full items-center justify-center">
+            <FileImage className="size-10 text-muted-foreground/50" />
+          </div>
+        )}
+        <div className="absolute inset-x-0 bottom-0 flex translate-y-full items-center justify-end gap-1 bg-gradient-to-t from-black/70 to-transparent px-3 pb-3 pt-8 transition-transform group-hover:translate-y-0">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="text-white hover:bg-white/15 hover:text-white"
+            onClick={onEdit}
+            aria-label="Edit media"
+          >
+            <Pencil />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="text-white hover:bg-white/15 hover:text-white"
+            onClick={onDelete}
+            aria-label="Delete media"
+          >
+            <Trash2 />
+          </Button>
+        </div>
+      </div>
+      <CardContent className="p-3">
+        <p className="truncate text-sm font-medium">{asset.originalFilename}</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {asset.mimeType.replace('image/', '').toUpperCase()} ·{' '}
+          {bytes(asset.size)}
+        </p>
+        {asset.alt && (
+          <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">
+            {asset.alt}
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

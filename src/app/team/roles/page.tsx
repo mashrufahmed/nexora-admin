@@ -1,13 +1,262 @@
 'use client';
+import { useAuth } from '@/components/providers/auth-provider';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  EmptyState,
+  LoadingSkeleton,
+  PageContainer,
+  PageHeader,
+} from '@/components/ui/ui-bits';
+import { ApiError } from '@/lib/api/client';
+import { rbacApi, type Permission, type Role } from '@/lib/api/rbac';
+import { Plus, ShieldCheck, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { PageContainer, PageHeader, EmptyState, LoadingSkeleton } from '@/components/ui/ui-bits';
-import { Button } from '@/components/ui/button'; import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; import { Input } from '@/components/ui/input'; import { Label } from '@/components/ui/label'; import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { rbacApi, type Role, type Permission } from '@/lib/api/rbac'; import { ApiError } from '@/lib/api/client'; import { Plus, ShieldCheck, Trash2 } from 'lucide-react'; import { useAuth } from '@/components/providers/auth-provider';
-export default function RolesPage() { const { can } = useAuth(); const [roles, setRoles] = useState<Role[]>([]); const [permissions, setPermissions] = useState<Permission[]>([]); const [selected, setSelected] = useState<string | null>(null); const [checked, setChecked] = useState<string[]>([]); const [name, setName] = useState(''); const [description, setDescription] = useState(''); const [open, setOpen] = useState(false); const [error, setError] = useState(''); const [loading, setLoading] = useState(true);
-  async function load() { setLoading(true); try { const [r, p] = await Promise.all([rbacApi.roles({ limit: 100 }), rbacApi.permissions({ limit: 100 })]); setRoles(r.data); setPermissions(p.data); } catch (e) { setError(e instanceof ApiError ? e.message : 'Unable to load roles and permissions'); } finally { setLoading(false); } }
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { void load(); }, []); async function selectRole(role: Role) { setSelected(role.id); try { const detail = await rbacApi.role(role.id); setChecked((detail.permissions ?? []).map((x) => x.permission.id)); } catch (e) { setError(e instanceof ApiError ? e.message : 'Unable to load role permissions'); } }
-  async function createRole(e: React.FormEvent) { e.preventDefault(); try { const role = await rbacApi.createRole({ name, description }); setRoles((all) => [role, ...all]); setOpen(false); setName(''); setDescription(''); } catch (x) { setError(x instanceof ApiError ? x.message : 'Unable to create role'); } }
-  async function savePermissions() { if (!selected || checked.length === 0) { setError('A role must have at least one permission.'); return; } try { await rbacApi.assignPermissions(selected, checked); await load(); } catch (x) { setError(x instanceof ApiError ? x.message : 'Unable to save permissions'); } }
-  async function removeRole(id: string) { if (!window.confirm('Delete this role?')) return; try { await rbacApi.deleteRole(id); setRoles((all) => all.filter((r) => r.id !== id)); if (selected === id) setSelected(null); } catch (x) { setError(x instanceof ApiError ? x.message : 'Unable to delete role'); } }
-  return <PageContainer><PageHeader title="Roles & permissions" description="Define reusable access bundles for your team." actions={<Dialog open={open} onOpenChange={setOpen}><DialogTrigger render={<Button disabled={!can('rbac.roles.create')}><Plus /> New role</Button>} /></Dialog>} />{error && <div role="alert" className="mb-5 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</div>}{loading ? <LoadingSkeleton rows={6} /> : <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr]"> <Card><CardHeader><CardTitle className="text-base">Roles</CardTitle></CardHeader><CardContent className="space-y-2">{roles.length === 0 ? <EmptyState icon={ShieldCheck} title="No roles yet" /> : roles.map((role) => <div key={role.id} className={`flex items-center gap-2 rounded-lg border p-3 ${selected === role.id ? 'border-primary bg-primary/5' : ''}`}><button className="min-w-0 flex-1 text-left" onClick={() => selectRole(role)}><p className="font-medium">{role.name}</p><p className="text-xs text-muted-foreground">{role._count?.permissions ?? role.permissions?.length ?? 0} permissions · {role._count?.admins ?? 0} members</p></button>{!role.isSystem && can('rbac.roles.delete') && <Button variant="ghost" size="icon-sm" onClick={() => void removeRole(role.id)}><Trash2 /></Button>}</div>)}</CardContent></Card><Card><CardHeader><CardTitle className="text-base">Permission assignment</CardTitle></CardHeader><CardContent>{selected ? <><div className="grid gap-2 sm:grid-cols-2">{permissions.map((p) => <label key={p.id} className="flex items-start gap-2 rounded-lg border p-3 text-sm"><input type="checkbox" checked={checked.includes(p.id)} onChange={(e) => setChecked((all) => e.target.checked ? [...all, p.id] : all.filter((id) => id !== p.id))} disabled={!can('rbac.roles.assign_permissions')} /><span><span className="block font-medium">{p.name}</span><span className="text-xs text-muted-foreground">{p.code}</span></span></label>)}</div><Button className="mt-4" disabled={!can('rbac.roles.assign_permissions')} onClick={() => void savePermissions()}>Save permissions</Button></> : <p className="py-12 text-center text-sm text-muted-foreground">Select a role to manage its permissions.</p>}</CardContent></Card></div>}<Dialog open={open} onOpenChange={setOpen}><DialogContent><DialogHeader><DialogTitle>Create a role</DialogTitle><DialogDescription>Give the role a clear name and purpose.</DialogDescription></DialogHeader><form onSubmit={createRole} className="space-y-4"><div className="space-y-2"><Label htmlFor="role-name">Name</Label><Input id="role-name" value={name} onChange={(e) => setName(e.target.value)} required /></div><div className="space-y-2"><Label htmlFor="role-description">Description</Label><Input id="role-description" value={description} onChange={(e) => setDescription(e.target.value)} /></div><DialogFooter><Button type="submit">Create role</Button></DialogFooter></form></DialogContent></Dialog></PageContainer> }
+export default function RolesPage() {
+  const { can } = useAuth();
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [permissions, setPermissions] = useState<Permission[]>([]);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [checked, setChecked] = useState<string[]>([]);
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [open, setOpen] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+  async function load() {
+    setLoading(true);
+    try {
+      const [r, p] = await Promise.all([
+        rbacApi.roles({ limit: 100 }),
+        rbacApi.permissions({ limit: 100 }),
+      ]);
+      setRoles(r.data);
+      setPermissions(p.data);
+    } catch (e) {
+      setError(
+        e instanceof ApiError
+          ? e.message
+          : 'Unable to load roles and permissions',
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+  useEffect(() => {
+    // Defer the stateful fetch until after the initial render.
+    const timer = window.setTimeout(() => void load(), 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+  async function selectRole(role: Role) {
+    setSelected(role.id);
+    try {
+      const detail = await rbacApi.role(role.id);
+      setChecked((detail.permissions ?? []).map((x) => x.permission.id));
+    } catch (e) {
+      setError(
+        e instanceof ApiError ? e.message : 'Unable to load role permissions',
+      );
+    }
+  }
+  async function createRole(e: React.FormEvent) {
+    e.preventDefault();
+    try {
+      const role = await rbacApi.createRole({ name, description });
+      setRoles((all) => [role, ...all]);
+      setOpen(false);
+      setName('');
+      setDescription('');
+    } catch (x) {
+      setError(x instanceof ApiError ? x.message : 'Unable to create role');
+    }
+  }
+  async function savePermissions() {
+    if (!selected || checked.length === 0) {
+      setError('A role must have at least one permission.');
+      return;
+    }
+    try {
+      await rbacApi.assignPermissions(selected, checked);
+      await load();
+    } catch (x) {
+      setError(
+        x instanceof ApiError ? x.message : 'Unable to save permissions',
+      );
+    }
+  }
+  async function removeRole(id: string) {
+    if (!window.confirm('Delete this role?')) return;
+    try {
+      await rbacApi.deleteRole(id);
+      setRoles((all) => all.filter((r) => r.id !== id));
+      if (selected === id) setSelected(null);
+    } catch (x) {
+      setError(x instanceof ApiError ? x.message : 'Unable to delete role');
+    }
+  }
+  return (
+    <PageContainer>
+      <PageHeader
+        title="Roles & permissions"
+        description="Define reusable access bundles for your team."
+        actions={
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger
+              render={
+                <Button disabled={!can('rbac.roles.create')}>
+                  <Plus /> New role
+                </Button>
+              }
+            />
+          </Dialog>
+        }
+      />
+      {error && (
+        <div
+          role="alert"
+          className="mb-5 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+        >
+          {error}
+        </div>
+      )}
+      {loading ? (
+        <LoadingSkeleton rows={6} />
+      ) : (
+        <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
+          {' '}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Roles</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {roles.length === 0 ? (
+                <EmptyState icon={ShieldCheck} title="No roles yet" />
+              ) : (
+                roles.map((role) => (
+                  <div
+                    key={role.id}
+                    className={`flex items-center gap-2 rounded-lg border p-3 ${selected === role.id ? 'border-primary bg-primary/5' : ''}`}
+                  >
+                    <button
+                      className="min-w-0 flex-1 text-left"
+                      onClick={() => selectRole(role)}
+                    >
+                      <p className="font-medium">{role.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {role._count?.permissions ??
+                          role.permissions?.length ??
+                          0}{' '}
+                        permissions · {role._count?.admins ?? 0} members
+                      </p>
+                    </button>
+                    {!role.isSystem && can('rbac.roles.delete') && (
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => void removeRole(role.id)}
+                      >
+                        <Trash2 />
+                      </Button>
+                    )}
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Permission assignment</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {selected ? (
+                <>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {permissions.map((p) => (
+                      <label
+                        key={p.id}
+                        className="flex items-start gap-2 rounded-lg border p-3 text-sm"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked.includes(p.id)}
+                          onChange={(e) =>
+                            setChecked((all) =>
+                              e.target.checked
+                                ? [...all, p.id]
+                                : all.filter((id) => id !== p.id),
+                            )
+                          }
+                          disabled={!can('rbac.roles.assign_permissions')}
+                        />
+                        <span>
+                          <span className="block font-medium">{p.name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {p.code}
+                          </span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                  <Button
+                    className="mt-4"
+                    disabled={!can('rbac.roles.assign_permissions')}
+                    onClick={() => void savePermissions()}
+                  >
+                    Save permissions
+                  </Button>
+                </>
+              ) : (
+                <p className="py-12 text-center text-sm text-muted-foreground">
+                  Select a role to manage its permissions.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create a role</DialogTitle>
+            <DialogDescription>
+              Give the role a clear name and purpose.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={createRole} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="role-name">Name</Label>
+              <Input
+                id="role-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="role-description">Description</Label>
+              <Input
+                id="role-description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+            <DialogFooter>
+              <Button type="submit">Create role</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </PageContainer>
+  );
+}

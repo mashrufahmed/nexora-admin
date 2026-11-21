@@ -1,12 +1,12 @@
-import { ThemeProvider } from '@/components/providers/theme-provider';
-import { AuthProvider } from '@/components/providers/auth-provider';
 import { AdminShell } from '@/components/layouts/admin-shell';
+import { AuthProvider } from '@/components/providers/auth-provider';
 import { QueryProvider } from '@/components/providers/query-provider';
+import { ThemeProvider } from '@/components/providers/theme-provider';
 import { cn } from '@/lib/utils';
 import type { Metadata } from 'next';
 import { Montserrat } from 'next/font/google';
-import { Suspense } from 'react';
 import type { ReactNode } from 'react';
+import { Suspense } from 'react';
 import './globals.css';
 
 const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-sans' });
@@ -30,7 +30,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           enableSystem
           disableTransitionOnChange
         >
-          <QueryProvider><Suspense fallback={null}><AuthProvider><AdminShell>{children}</AdminShell></AuthProvider></Suspense></QueryProvider>
+          <QueryProvider>
+            <Suspense fallback={null}>
+              <AuthProvider>
+                <AdminShell>{children}</AdminShell>
+              </AuthProvider>
+            </Suspense>
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>

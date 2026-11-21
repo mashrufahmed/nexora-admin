@@ -8,7 +8,16 @@ export type AffiliateLink = {
   status: string;
   merchant?: { id: string; name: string };
   createdAt?: string;
+  siteProductId?: string | null;
   [key: string]: unknown;
+};
+export type AffiliateLinkInput = {
+  siteId: string;
+  merchantId: string;
+  destinationUrl: string;
+  trackingUrl?: string;
+  siteProductId?: string;
+  status: 'ACTIVE' | 'INACTIVE';
 };
 export type Merchant = {
   id: string;
@@ -22,9 +31,9 @@ export const affiliateApi = {
     apiFetch<AffiliateLink[]>(
       `/affiliate-links?siteId=${encodeURIComponent(siteId)}`,
     ),
-  create: (input: Record<string, unknown>) =>
+  create: (input: AffiliateLinkInput) =>
     apiJson<AffiliateLink>('/affiliate-links', 'POST', input),
-  update: (id: string, input: Record<string, unknown>) =>
+  update: (id: string, input: Partial<AffiliateLinkInput>) =>
     apiJson<AffiliateLink>(`/affiliate-links/${id}`, 'PATCH', input),
   remove: (id: string) =>
     apiJson<{ message: string }>(`/affiliate-links/${id}`, 'DELETE'),

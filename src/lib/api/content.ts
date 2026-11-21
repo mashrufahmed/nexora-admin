@@ -24,6 +24,7 @@ export type Content = {
     slug: string;
     status: string;
     publishedAt?: string | null;
+    scheduledAt?: string | null;
     categories?: Array<{ categoryId: string }>;
   }>;
   authors?: Array<{ authorId: string; position: number }>;
@@ -34,6 +35,16 @@ export type ContentInput = {
   slug: string;
   excerpt?: string;
   body?: Record<string, unknown>;
+};
+
+export type ContentRevision = {
+  id: string;
+  revisionNumber: number;
+  title: string;
+  excerpt?: string | null;
+  body: Record<string, unknown> | null;
+  createdAt: string;
+  createdBy?: { id: string; name?: string; email?: string } | null;
 };
 
 export const contentApi = {
@@ -57,6 +68,15 @@ export const contentApi = {
       categoryIds,
       slug,
     }),
+  schedule: (id: string, siteId: string, scheduledAt: string) =>
+    apiJson<Content>(`/content/${id}/schedule`, 'POST', { siteId, scheduledAt }),
+  revisions: (id: string) => apiFetch<ContentRevision[]>(`/content/${id}/revisions`),
+  previewRevision: (id: string, revisionId: string) =>
+    apiFetch<{ contentId: string; revision: ContentRevision }>(
+      `/content/${id}/revisions/${revisionId}/preview`,
+    ),
+  restoreRevision: (id: string, revisionId: string) =>
+    apiJson<Content>(`/content/${id}/revisions/${revisionId}/restore`, 'POST'),
 };
 
 export type Category = {

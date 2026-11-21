@@ -1,15 +1,13 @@
 'use client';
 
+import { authApi } from '@/lib/api/auth';
+import { ApiError } from '@/lib/api/client';
 import { IconArrowLeft, IconShieldCheck } from '@tabler/icons-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
-import { ApiError } from '@/lib/api/client';
-import { authApi } from '@/lib/api/auth';
 
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Card,
   CardContent,
@@ -17,11 +15,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
 } from '@/components/ui/input-otp';
+import { Label } from '@/components/ui/label';
 
 function VerifyOtpForm() {
   const params = useSearchParams();
@@ -32,18 +32,32 @@ function VerifyOtpForm() {
   const [loading, setLoading] = useState(false);
 
   async function verify(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setError(''); setLoading(true);
-    try { await authApi.verifyEmail(email, otp); setMessage('Email verified. You can now sign in.'); }
-    catch (cause) { setError(cause instanceof ApiError ? cause.message : 'Unable to verify email'); }
-    finally { setLoading(false); }
+    event.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      await authApi.verifyEmail(email, otp);
+      setMessage('Email verified. You can now sign in.');
+    } catch (cause) {
+      setError(
+        cause instanceof ApiError ? cause.message : 'Unable to verify email',
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function resend() {
     setError('');
-    try { setMessage((await authApi.resendEmailOtp(email)).message); }
-    catch (cause) { setError(cause instanceof ApiError ? cause.message : 'Unable to resend code'); }
+    try {
+      setMessage((await authApi.resendEmailOtp(email)).message);
+    } catch (cause) {
+      setError(
+        cause instanceof ApiError ? cause.message : 'Unable to resend code',
+      );
+    }
   }
-  
+
   return (
     <main className="flex min-h-screen items-center justify-center bg-background p-6 text-foreground">
       <Card className="w-full max-w-md border-border/70 bg-card/90 shadow-xl">
@@ -72,7 +86,16 @@ function VerifyOtpForm() {
 
         <CardContent>
           <form onSubmit={verify} className="space-y-6">
-            <div className="space-y-2"><Label htmlFor="email">Email address</Label><Input id="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email address</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                required
+              />
+            </div>
             <InputOTP
               maxLength={6}
               value={otp}
@@ -98,7 +121,14 @@ function VerifyOtpForm() {
             >
               {loading ? 'Verifying…' : 'Verify email'}
             </Button>
-            {(error || message) && <p role="alert" className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">{error || message}</p>}
+            {(error || message) && (
+              <p
+                role="alert"
+                className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive"
+              >
+                {error || message}
+              </p>
+            )}
 
             <p className="text-center font-medium text-xs text-muted-foreground">
               Didn&apos;t receive the code?{' '}
@@ -118,5 +148,9 @@ function VerifyOtpForm() {
 }
 
 export default function VerifyOtpPage() {
-  return <Suspense fallback={null}><VerifyOtpForm /></Suspense>;
+  return (
+    <Suspense fallback={null}>
+      <VerifyOtpForm />
+    </Suspense>
+  );
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { useAuth } from '@/components/providers/auth-provider';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -13,7 +14,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { authApi } from '@/lib/api/auth';
 import { ApiError } from '@/lib/api/client';
-import { useAuth } from '@/components/providers/auth-provider';
 import { IconCrown, IconEye, IconEyeOff } from '@tabler/icons-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';

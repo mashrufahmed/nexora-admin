@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -52,9 +52,7 @@ function Breadcrumbs() {
                   {c.label}
                 </BreadcrumbPage>
               ) : (
-                <BreadcrumbLink
-                  render={<Link href={c.href}>{c.label}</Link>}
-                />
+                <BreadcrumbLink render={<Link href={c.href}>{c.label}</Link>} />
               )}
             </BreadcrumbItem>
           </Fragment>
@@ -80,12 +78,12 @@ export function NotificationCenter() {
             className="relative rounded-lg"
             aria-label={`Notifications, ${unread} unread`}
           >
-          <Bell className="size-4" />
-          {unread > 0 && (
-            <span className="absolute right-1.5 top-1.5 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
-              {unread}
-            </span>
-          )}
+            <Bell className="size-4" />
+            {unread > 0 && (
+              <span className="absolute right-1.5 top-1.5 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
+                {unread}
+              </span>
+            )}
           </Button>
         }
       />
@@ -148,9 +146,17 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b bg-background/92 px-3 backdrop-blur supports-backdrop-filter:bg-background/80 sm:px-5">
       <SidebarTrigger />
-      <Separator orientation="vertical" className="mx-1 h-5" />
+      <Separator orientation="vertical" className="mx-1 h-full" />
       <Breadcrumbs />
-      <div className="ml-auto hidden max-w-sm flex-1 items-center justify-center px-4 lg:flex"><button className="flex h-8 w-full items-center gap-2 rounded-lg border bg-muted/40 px-3 text-left text-xs text-muted-foreground transition-colors hover:bg-muted"><Search className="size-3.5" /><span className="flex-1">Search anything...</span><span className="inline-flex items-center gap-0.5 rounded border bg-background px-1.5 py-0.5 text-[10px]"><Command className="size-2.5" /> K</span></button></div>
+      <div className="ml-auto hidden max-w-sm flex-1 items-center justify-center px-4 lg:flex">
+        <button className="flex h-8 w-full items-center gap-2 rounded-lg border bg-muted/40 px-3 text-left text-xs text-muted-foreground transition-colors hover:bg-muted">
+          <Search className="size-3.5" />
+          <span className="flex-1">Search anything...</span>
+          <span className="inline-flex items-center gap-0.5 rounded border bg-background px-1.5 py-0.5 text-[10px]">
+            <Command className="size-2.5" /> K
+          </span>
+        </button>
+      </div>
       <div className="ml-auto flex items-center gap-1.5">
         <NotificationCenter />
       </div>

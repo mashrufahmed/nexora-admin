@@ -1,4 +1,99 @@
 'use client';
-import { useEffect, useState } from 'react'; import { PageContainer, PageHeader, EmptyState, LoadingSkeleton } from '@/components/ui/ui-bits'; import { Card, CardContent } from '@/components/ui/card'; import { Input } from '@/components/ui/input'; import { Button } from '@/components/ui/button'; import { auditApi, type AuditLog } from '@/lib/api/audit'; import { ApiError } from '@/lib/api/client'; import { ClipboardList, RefreshCw, Search } from 'lucide-react';
-export default function AuditLogsPage() { const [logs, setLogs] = useState<AuditLog[]>([]); const [search, setSearch] = useState(''); const [loading, setLoading] = useState(true); const [error, setError] = useState(''); async function load() { setLoading(true); try { const result = await auditApi.list({ limit: 100, action: search || undefined }); setLogs(result.data); } catch (e) { setError(e instanceof ApiError ? e.message : 'Unable to load audit logs'); } finally { setLoading(false); } } // eslint-disable-next-line react-hooks/exhaustive-deps
-useEffect(() => { const t = window.setTimeout(() => void load(), 250); return () => window.clearTimeout(t); }, [search]); return <PageContainer><PageHeader title="Audit logs" description="Review security and administration activity." actions={<Button variant="outline" size="sm" onClick={() => void load()}><RefreshCw /> Refresh</Button>} />{error && <div role="alert" className="mb-5 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</div>}<div className="mb-5 flex max-w-md items-center gap-2 rounded-lg border bg-card px-3"><Search className="size-4 text-muted-foreground" /><Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Filter by action…" className="border-0 bg-transparent shadow-none focus-visible:ring-0" /></div>{loading ? <LoadingSkeleton rows={8} /> : logs.length === 0 ? <EmptyState icon={ClipboardList} title="No audit activity found" description="New security and administration events will appear here." /> : <Card><CardContent className="divide-y p-0">{logs.map((log) => <div key={log.id} className="flex flex-col gap-1 p-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-medium">{log.action}</p><p className="text-sm text-muted-foreground">{log.actor?.name ?? 'System'} · {log.entityType}{log.entityId ? ` · ${log.entityId}` : ''}</p></div><time className="text-xs text-muted-foreground">{new Date(log.createdAt).toLocaleString()}</time></div>)}</CardContent></Card>}</PageContainer> }
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+  EmptyState,
+  LoadingSkeleton,
+  PageContainer,
+  PageHeader,
+} from '@/components/ui/ui-bits';
+import { auditApi, type AuditLog } from '@/lib/api/audit';
+import { ApiError } from '@/lib/api/client';
+import { ClipboardList, RefreshCw, Search } from 'lucide-react';
+import { useEffect, useState } from 'react';
+export default function AuditLogsPage() {
+  const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  async function load() {
+    setLoading(true);
+    try {
+      const result = await auditApi.list({
+        limit: 100,
+        action: search || undefined,
+      });
+      setLogs(result.data);
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : 'Unable to load audit logs');
+    } finally {
+      setLoading(false);
+    }
+  } // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const t = window.setTimeout(() => void load(), 250);
+    return () => window.clearTimeout(t);
+  }, [search]);
+  return (
+    <PageContainer>
+      <PageHeader
+        title="Audit logs"
+        description="Review security and administration activity."
+        actions={
+          <Button variant="outline" size="sm" onClick={() => void load()}>
+            <RefreshCw /> Refresh
+          </Button>
+        }
+      />
+      {error && (
+        <div
+          role="alert"
+          className="mb-5 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+        >
+          {error}
+        </div>
+      )}
+      <div className="mb-5 flex max-w-md items-center gap-2 rounded-lg border bg-card px-3">
+        <Search className="size-4 text-muted-foreground" />
+        <Input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Filter by action…"
+          className="border-0 bg-transparent shadow-none focus-visible:ring-0"
+        />
+      </div>
+      {loading ? (
+        <LoadingSkeleton rows={8} />
+      ) : logs.length === 0 ? (
+        <EmptyState
+          icon={ClipboardList}
+          title="No audit activity found"
+          description="New security and administration events will appear here."
+        />
+      ) : (
+        <Card>
+          <CardContent className="divide-y p-0">
+            {logs.map((log) => (
+              <div
+                key={log.id}
+                className="flex flex-col gap-1 p-4 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div>
+                  <p className="font-medium">{log.action}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {log.actor?.name ?? 'System'} · {log.entityType}
+                    {log.entityId ? ` · ${log.entityId}` : ''}
+                  </p>
+                </div>
+                <time className="text-xs text-muted-foreground">
+                  {new Date(log.createdAt).toLocaleString()}
+                </time>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+    </PageContainer>
+  );
+}

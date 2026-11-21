@@ -1,5 +1,7 @@
 'use client';
 
+import { authApi } from '@/lib/api/auth';
+import { ApiError } from '@/lib/api/client';
 import {
   IconArrowLeft,
   IconEye,
@@ -7,10 +9,8 @@ import {
   IconLock,
 } from '@tabler/icons-react';
 import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
-import { ApiError } from '@/lib/api/client';
-import { authApi } from '@/lib/api/auth';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -36,12 +36,23 @@ function ResetPasswordForm() {
   const [loading, setLoading] = useState(false);
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setError('');
-    if (password !== confirmPassword) { setError('Passwords do not match'); return; }
+    event.preventDefault();
+    setError('');
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
     setLoading(true);
-    try { await authApi.resetPassword(email, token, password); router.replace('/auth/login'); }
-    catch (cause) { setError(cause instanceof ApiError ? cause.message : 'Unable to reset password'); }
-    finally { setLoading(false); }
+    try {
+      await authApi.resetPassword(email, token, password);
+      router.replace('/auth/login');
+    } catch (cause) {
+      setError(
+        cause instanceof ApiError ? cause.message : 'Unable to reset password',
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -71,8 +82,25 @@ function ResetPasswordForm() {
 
         <CardContent>
           <form onSubmit={submit} className="space-y-5">
-            <div className="space-y-2"><Label htmlFor="email">Email address</Label><Input id="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></div>
-            <div className="space-y-2"><Label htmlFor="token">Reset token</Label><Input id="token" value={token} onChange={(event) => setToken(event.target.value)} required /></div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email address</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="token">Reset token</Label>
+              <Input
+                id="token"
+                value={token}
+                onChange={(event) => setToken(event.target.value)}
+                required
+              />
+            </div>
             {/* New password */}
             <div className="space-y-2">
               <Label htmlFor="password">New password</Label>
@@ -141,7 +169,14 @@ function ResetPasswordForm() {
               </div>
             </div>
 
-            {error && <p role="alert" className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</p>}
+            {error && (
+              <p
+                role="alert"
+                className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive"
+              >
+                {error}
+              </p>
+            )}
             <Button type="submit" className="h-10 w-full" disabled={loading}>
               {loading ? 'Resetting…' : 'Reset password'}
             </Button>
@@ -160,5 +195,9 @@ function ResetPasswordForm() {
 }
 
 export default function ResetPasswordPage() {
-  return <Suspense fallback={null}><ResetPasswordForm /></Suspense>;
+  return (
+    <Suspense fallback={null}>
+      <ResetPasswordForm />
+    </Suspense>
+  );
 }

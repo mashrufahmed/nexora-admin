@@ -15,8 +15,8 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ApiError } from '@/lib/api/client';
 import { authApi } from '@/lib/api/auth';
+import { ApiError } from '@/lib/api/client';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -32,7 +32,11 @@ export default function ForgotPasswordPage() {
       await authApi.forgotPassword(email);
       router.replace(`/auth/reset-password?email=${encodeURIComponent(email)}`);
     } catch (cause) {
-      setError(cause instanceof ApiError ? cause.message : 'Unable to request a reset link');
+      setError(
+        cause instanceof ApiError
+          ? cause.message
+          : 'Unable to request a reset link',
+      );
     } finally {
       setLoading(false);
     }
@@ -80,7 +84,14 @@ export default function ForgotPasswordPage() {
               />
             </div>
 
-            {error && <p role="alert" className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</p>}
+            {error && (
+              <p
+                role="alert"
+                className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive"
+              >
+                {error}
+              </p>
+            )}
             <Button type="submit" className="h-10 w-full" disabled={loading}>
               {loading ? 'Sending…' : 'Send reset link'}
             </Button>

@@ -1,3 +1,115 @@
 'use client';
-import { useState } from 'react'; import { useMutation,useQuery,useQueryClient } from '@tanstack/react-query'; import { Plus,Tag as TagIcon,Trash2 } from 'lucide-react'; import { PageContainer,PageHeader,EmptyState } from '@/components/ui/ui-bits'; import { Button } from '@/components/ui/button'; import { Card,CardContent } from '@/components/ui/card'; import { Input } from '@/components/ui/input'; import { Select,SelectContent,SelectItem,SelectTrigger,SelectValue } from '@/components/ui/select'; import { sitesApi } from '@/lib/api/sites'; import { p1Api } from '@/lib/api/p1';
-export default function TagsPage(){const[siteId,setSiteId]=useState('');const sites=useQuery({queryKey:['sites'],queryFn:sitesApi.list});const client=useQueryClient();const list=useQuery({queryKey:['tags',siteId],queryFn:()=>p1Api.tags(siteId),enabled:!!siteId});const create=useMutation({mutationFn:p1Api.createTag,onSuccess:()=>void client.invalidateQueries({queryKey:['tags',siteId]})});const remove=useMutation({mutationFn:p1Api.deleteTag,onSuccess:()=>void client.invalidateQueries({queryKey:['tags',siteId]})});return <PageContainer><PageHeader title="Tags" description="Organize site content with reusable tags."/><div className="mb-5 w-full max-w-sm"><Select value={siteId} onValueChange={(value)=>setSiteId(value ?? '')}><SelectTrigger className="w-full"><SelectValue placeholder="Choose a site" /></SelectTrigger><SelectContent>{(sites.data??[]).map(s=><SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent></Select></div>{siteId&&<><form className="mb-5 flex gap-2" onSubmit={e=>{e.preventDefault();const f=new FormData(e.currentTarget);create.mutate({siteId,name:String(f.get('name')),slug:String(f.get('slug'))});e.currentTarget.reset();}}><Input name="name" placeholder="Tag name" required/><Input name="slug" placeholder="tag-slug" required/><Button type="submit"><Plus/> Add tag</Button></form>{(list.data??[]).length===0?<EmptyState icon={TagIcon} title="No tags" description="Create the first tag for this site."/>:<div className="grid gap-2 md:grid-cols-2">{list.data!.map(t=><Card key={t.id}><CardContent className="flex items-center gap-3 p-4"><TagIcon className="size-4 text-primary"/><span className="flex-1">{t.name}<span className="ml-2 text-xs text-muted-foreground">{t.slug}</span></span><Button variant="ghost" size="icon-sm" onClick={()=>remove.mutate(t.id)}><Trash2/></Button></CardContent></Card>)}</div>}</>}</PageContainer>}
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { EmptyState, PageContainer, PageHeader } from '@/components/ui/ui-bits';
+import { p1Api } from '@/lib/api/p1';
+import { sitesApi } from '@/lib/api/sites';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Plus, Tag as TagIcon, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+export default function TagsPage() {
+  const [siteId, setSiteId] = useState('');
+  const sites = useQuery({ queryKey: ['sites'], queryFn: sitesApi.list });
+  const client = useQueryClient();
+  const list = useQuery({
+    queryKey: ['tags', siteId],
+    queryFn: () => p1Api.tags(siteId),
+    enabled: !!siteId,
+  });
+  const create = useMutation({
+    mutationFn: p1Api.createTag,
+    onSuccess: () =>
+      void client.invalidateQueries({ queryKey: ['tags', siteId] }),
+  });
+  const remove = useMutation({
+    mutationFn: p1Api.deleteTag,
+    onSuccess: () =>
+      void client.invalidateQueries({ queryKey: ['tags', siteId] }),
+  });
+  return (
+    <PageContainer>
+      <PageHeader
+        title="Tags"
+        description="Organize site content with reusable tags."
+      />
+      <div className="mb-5 w-full max-w-sm">
+        <Select
+          value={siteId}
+          onValueChange={(value) => setSiteId(value ?? '')}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Choose a site" />
+          </SelectTrigger>
+          <SelectContent>
+            {(sites.data ?? []).map((s) => (
+              <SelectItem key={s.id} value={s.id}>
+                {s.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      {siteId && (
+        <>
+          <form
+            className="mb-5 flex gap-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const f = new FormData(e.currentTarget);
+              create.mutate({
+                siteId,
+                name: String(f.get('name')),
+                slug: String(f.get('slug')),
+              });
+              e.currentTarget.reset();
+            }}
+          >
+            <Input name="name" placeholder="Tag name" required />
+            <Input name="slug" placeholder="tag-slug" required />
+            <Button type="submit">
+              <Plus /> Add tag
+            </Button>
+          </form>
+          {(list.data ?? []).length === 0 ? (
+            <EmptyState
+              icon={TagIcon}
+              title="No tags"
+              description="Create the first tag for this site."
+            />
+          ) : (
+            <div className="grid gap-2 md:grid-cols-2">
+              {list.data!.map((t) => (
+                <Card key={t.id}>
+                  <CardContent className="flex items-center gap-3 p-4">
+                    <TagIcon className="size-4 text-primary" />
+                    <span className="flex-1">
+                      {t.name}
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        {t.slug}
+                      </span>
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => remove.mutate(t.id)}
+                    >
+                      <Trash2 />
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </PageContainer>
+  );
+}
